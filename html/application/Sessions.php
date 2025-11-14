@@ -15,9 +15,14 @@ class Session
 		           || (!empty($_SERVER['SERVER_PORT']) && $_SERVER['SERVER_PORT'] == 443);
 		ini_set('session.cookie_secure', $isHttps ? 1 : 0);
 		
-		ini_set('session.cookie_samesite', 'Strict');
+		// SameSite=Lax に変更（Strict は厳しすぎてセッションが機能しない場合がある）
+		ini_set('session.cookie_samesite', 'Lax');
 		
 		session_start();
+		
+		// デバッグ: セッション情報をログ出力
+		error_log('[SESSION DEBUG] Session ID: ' . session_id());
+		error_log('[SESSION DEBUG] Session started: ' . (session_status() === PHP_SESSION_ACTIVE ? 'YES' : 'NO'));
 	}//<--- * END init() * --->
 	
 	public function destroy( $action = false  ) {

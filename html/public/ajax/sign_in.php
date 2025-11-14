@@ -1,5 +1,13 @@
 <?php
 session_start();
+
+// デバッグ: リクエスト情報をログ出力
+error_log('[SIGN_IN DEBUG] POST data received');
+error_log('[SIGN_IN DEBUG] User: ' . (isset($_POST['user']) ? $_POST['user'] : 'NOT SET'));
+error_log('[SIGN_IN DEBUG] Password length: ' . (isset($_POST['password']) ? strlen($_POST['password']) : 'NOT SET'));
+error_log('[SIGN_IN DEBUG] Session ID: ' . session_id());
+error_log('[SIGN_IN DEBUG] Session authenticated: ' . (isset($_SESSION['authenticated']) ? $_SESSION['authenticated'] : 'NOT SET'));
+
 //error_reporting(1);
 //phpinfo();exit;
 if ( 
@@ -37,7 +45,13 @@ if ( !( $_SESSION['authenticated'] ) or $_GET['multilogin'] ) {
 			echo $_SESSION['LANG']['pass_not_invalid'];
 		} else {
 			
+			 error_log('[SIGN_IN DEBUG] Calling signIn()...');
 			 $res    = $obj->signIn();
+			 error_log('[SIGN_IN DEBUG] signIn() result: ' . ($res ? 'SUCCESS' : 'FAILED'));
+			 if($res && isset($res['id'])) {
+			 	error_log('[SIGN_IN DEBUG] User ID: ' . $res['id']);
+			 }
+			 
 			 if( isset( $res['id'] ) ){
 			 	if($_SESSION['authenticated']){
 					//マルチログイン
@@ -48,15 +62,21 @@ if ( !( $_SESSION['authenticated'] ) or $_GET['multilogin'] ) {
 			 	$_SESSION['authenticated'] = $res['id'];
 				$_SESSION['lang_user']     = $res['language'];
 				
+				// HTTPS環境判定
+				$isHttps = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') 
+				           || (!empty($_SERVER['SERVER_PORT']) && $_SERVER['SERVER_PORT'] == 443);
+				
 				$time = time() + 60*60*24*1000;
 				if( isset( $_POST['Keeplogged'] ) && $_POST['Keeplogged'] == 1 ) {	
-					setcookie('socialRemember', $res['id'], $time,'/','24h.tl');
+					setcookie('socialRemember', $res['id'], $time, '/', '', $isHttps, true);
 				}
 				if(preg_match('/24h_timeline/',$_SERVER['HTTP_USER_AGENT'])){
-					setcookie('24h_app_autosessid',session_id(),$time,'/','24h.tl');
+					setcookie('24h_app_autosessid',session_id(),$time, '/', '', $isHttps, true);
 				}
+				error_log('[SIGN_IN DEBUG] Login successful, returning True');
 				die('True');
 		} else {
+		 error_log('[SIGN_IN DEBUG] Login failed: account not active');
 		 echo  $_SESSION['LANG']['account_not_active'];
 		}// ELSE
 }// ELSE
