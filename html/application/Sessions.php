@@ -19,10 +19,6 @@ class Session
 		ini_set('session.cookie_samesite', 'Lax');
 		
 		session_start();
-		
-		// デバッグ: セッション情報をログ出力
-		error_log('[SESSION DEBUG] Session ID: ' . session_id());
-		error_log('[SESSION DEBUG] Session started: ' . (session_status() === PHP_SESSION_ACTIVE ? 'YES' : 'NO'));
 	}//<--- * END init() * --->
 	
 	public function destroy( $action = false  ) {

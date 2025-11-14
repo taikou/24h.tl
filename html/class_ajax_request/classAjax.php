@@ -473,7 +473,9 @@ class AjaxRequest
 		0,
 		''
 		);";
-		$password = password_hash($_POST['password'], PASSWORD_BCRYPT, ['cost' => 12]);
+		// TODO: データベースのpasswordフィールドをVARCHAR(255)に変更後にbcryptに戻す
+		// $password = password_hash($_POST['password'], PASSWORD_BCRYPT, ['cost' => 12]);
+		$password = sha1($_POST['password']); // 一時的にSHA-1に戻す
 
 		$stmt  = $this->db->prepare( $sql );
 		
@@ -567,11 +569,6 @@ error_log($sql);
 			$ret= $query->fetch( PDO::FETCH_ASSOC );
 			
 			if($ret) {
-				// デバッグ: パスワードハッシュの情報をログ出力
-				error_log('[LOGIN DEBUG] User: ' . $user);
-				error_log('[LOGIN DEBUG] Stored password hash length: ' . strlen($ret['password']));
-				error_log('[LOGIN DEBUG] Stored password hash: ' . $ret['password']);
-				
 				// パスワード検証（新しいハッシュと旧 SHA-1 の両方に対応）
 				$password_valid = false;
 				$needs_upgrade = false;
@@ -579,20 +576,17 @@ error_log($sql);
 				// 新しい bcrypt ハッシュで検証
 				if (password_verify($user_input, $ret['password'])) {
 					$password_valid = true;
-					error_log('[LOGIN DEBUG] Password verified with bcrypt');
 				}
 				// 旧 SHA-1 ハッシュで検証（互換性のため）
 				elseif (sha1($user_input) === $ret['password']) {
 					$password_valid = true;
 					$needs_upgrade = true; // 次回ログイン時に新しいハッシュに更新
-					error_log('[LOGIN DEBUG] Password verified with SHA-1 (needs upgrade)');
-				} else {
-					error_log('[LOGIN DEBUG] Password verification failed');
-					error_log('[LOGIN DEBUG] SHA-1 of input: ' . sha1($user_input));
 				}
 				
 				if ($password_valid) {
-					// 旧パスワードを新しいハッシュに移行
+					// 旧パスワードを新しいハッシュに移行（一時的に無効化）
+					// TODO: データベースのpasswordフィールドをVARCHAR(255)に変更後に有効化
+					/*
 					if ($needs_upgrade) {
 						$new_hash = password_hash($user_input, PASSWORD_BCRYPT, ['cost' => 12]);
 						error_log('[LOGIN DEBUG] Upgrading password to bcrypt');
@@ -607,6 +601,7 @@ error_log($sql);
 						error_log('[LOGIN DEBUG] Password update result: ' . ($result ? 'SUCCESS' : 'FAILED'));
 						error_log('[LOGIN DEBUG] Rows affected: ' . $update_query->rowCount());
 					}
+					*/
 					
 					// HTTPS環境判定
 					$isHttps = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') 
@@ -680,7 +675,9 @@ error_log($sql);
 				}
 				
 				if ($password_valid) {
-					// 旧パスワードを新しいハッシュに移行
+					// 旧パスワードを新しいハッシュに移行（一時的に無効化）
+					// TODO: データベースのpassフィールドをVARCHAR(255)に変更後に有効化
+					/*
 					if ($needs_upgrade) {
 						$new_hash = password_hash($user_input, PASSWORD_BCRYPT, ['cost' => 12]);
 						$update_sql = "UPDATE admin SET pass = :new_hash WHERE id = :id LIMIT 1";
@@ -690,6 +687,7 @@ error_log($sql);
 							':id' => $ret['id']
 						]);
 					}
+					*/
 					
 					// パスワードフィールドを返り値から除外
 					unset($ret['pass']);
@@ -2690,7 +2688,9 @@ error_log($sql);
 		 *  from Page http://sitename.com/password/
 		 * ----------------------------------------
 		 */
-		$pass        = password_hash($_POST['confirm'], PASSWORD_BCRYPT, ['cost' => 12]);
+		// TODO: データベースのpasswordフィールドをVARCHAR(255)に変更後にbcryptに戻す
+		// $pass        = password_hash($_POST['confirm'], PASSWORD_BCRYPT, ['cost' => 12]);
+		$pass        = sha1($_POST['confirm']); // 一時的にSHA-1に戻す
 		$sql = "UPDATE users SET password = :pass WHERE id = :user";
 		$stmt = $this->db->prepare( $sql );
 		$stmt->bindValue( ':pass', $pass, PDO::PARAM_STR );
@@ -2718,7 +2718,9 @@ error_log($sql);
 			return false;
 		}
 		
-		$pass = password_hash($_POST['pass_2'], PASSWORD_BCRYPT, ['cost' => 12]);
+		// TODO: データベースのpasswordフィールドをVARCHAR(255)に変更後にbcryptに戻す
+		// $pass = password_hash($_POST['pass_2'], PASSWORD_BCRYPT, ['cost' => 12]);
+		$pass = sha1($_POST['pass_2']); // 一時的にSHA-1に戻す
 		$sql = "UPDATE 
 		users U 
 		INNER JOIN recover_pass R ON U.email = R.email

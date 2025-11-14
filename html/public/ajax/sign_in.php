@@ -1,13 +1,5 @@
 <?php
 session_start();
-
-// デバッグ: リクエスト情報をログ出力
-error_log('[SIGN_IN DEBUG] POST data received');
-error_log('[SIGN_IN DEBUG] User: ' . (isset($_POST['user']) ? $_POST['user'] : 'NOT SET'));
-error_log('[SIGN_IN DEBUG] Password length: ' . (isset($_POST['password']) ? strlen($_POST['password']) : 'NOT SET'));
-error_log('[SIGN_IN DEBUG] Session ID: ' . session_id());
-error_log('[SIGN_IN DEBUG] Session authenticated: ' . (isset($_SESSION['authenticated']) ? $_SESSION['authenticated'] : 'NOT SET'));
-
 //error_reporting(1);
 //phpinfo();exit;
 if ( 
@@ -45,12 +37,7 @@ if ( !( $_SESSION['authenticated'] ) or $_GET['multilogin'] ) {
 			echo $_SESSION['LANG']['pass_not_invalid'];
 		} else {
 			
-			 error_log('[SIGN_IN DEBUG] Calling signIn()...');
 			 $res    = $obj->signIn();
-			 error_log('[SIGN_IN DEBUG] signIn() result: ' . ($res ? 'SUCCESS' : 'FAILED'));
-			 if($res && isset($res['id'])) {
-			 	error_log('[SIGN_IN DEBUG] User ID: ' . $res['id']);
-			 }
 			 
 			 if( isset( $res['id'] ) ){
 			 	if($_SESSION['authenticated']){
@@ -73,10 +60,8 @@ if ( !( $_SESSION['authenticated'] ) or $_GET['multilogin'] ) {
 				if(preg_match('/24h_timeline/',$_SERVER['HTTP_USER_AGENT'])){
 					setcookie('24h_app_autosessid',session_id(),$time, '/', '', $isHttps, true);
 				}
-				error_log('[SIGN_IN DEBUG] Login successful, returning True');
 				die('True');
 		} else {
-		 error_log('[SIGN_IN DEBUG] Login failed: account not active');
 		 echo  $_SESSION['LANG']['account_not_active'];
 		}// ELSE
 }// ELSE
