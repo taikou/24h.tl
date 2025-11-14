@@ -593,11 +593,15 @@ error_log($sql);
 						]);
 					}
 					
+					// HTTPS環境判定
+					$isHttps = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') 
+					           || (!empty($_SERVER['SERVER_PORT']) && $_SERVER['SERVER_PORT'] == 443);
+					
 					if(preg_match('/24h_timeline/',$_SERVER['HTTP_USER_AGENT'])){
 						//アプリの場合は自動ログインTOKENを保持（こっちの方法は未可動）
 						$token=hash('sha512',$ret['id'].'_'.time());
 						$time = time() + 60*60*24*30; //30日
-						setcookie('app_token',$token,$time, '/', '', true, true); // secure, httpOnly
+						setcookie('app_token',$token,$time, '/', '', $isHttps, true); // secure（HTTPS時のみ）, httpOnly
 						$sql="INSERT INTO user_apptoken (uid, token) VALUES('".$ret['id']."','".$token."') ON DUPLICATE KEY UPDATE token='".$token."', firstlogin_at=now(), lastlogin_at=''";
 						$this->db->query($sql);
 						
@@ -606,7 +610,7 @@ error_log($sql);
 						error_log($sql);
 						$this->db->query($sql);
 						$time = time() + 60*60*24*30; //30日
-						setcookie('24h_app_autosessid',session_id(),$time, '/', '', true, true); // secure, httpOnly
+						setcookie('24h_app_autosessid',session_id(),$time, '/', '', $isHttps, true); // secure（HTTPS時のみ）, httpOnly
 						error_log(session_name().','.session_id().','.$time);
 					}
 					

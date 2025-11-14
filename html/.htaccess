@@ -34,7 +34,8 @@ Header set Cache-Control "max-age=2678400, must-revalidate"
     Header set X-Frame-Options "SAMEORIGIN"
     Header set X-Content-Type-Options "nosniff"
     Header set Referrer-Policy "strict-origin-when-cross-origin"
-    Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains"
+    # HSTS は HTTPS 環境でのみ有効化してください
+    # Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains"
 </IfModule>
 
 #+SymLinksIfOwnerMatch
