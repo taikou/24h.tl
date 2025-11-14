@@ -15,68 +15,85 @@
 		}
 	});
 
-	// タップ処理中フラグ（重複イベント防止用）
-	var isProcessingTouch = false;
+	// 開いているリアクションボックスを追跡
+	var openReactionBox = null;
+	var touchStartTime = 0;
+	var isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
 
 	// PC用: マウスホバーでリアクションボックスを表示
-	$(document).on( 'mouseenter', 'div.dw-reactions-button', function(e){
-		if($(this).parent().data('type')=='vote'){
-			$(this).addClass('reaction-show');
-		}
-	});
+	if (!isTouchDevice) {
+		$(document).on('mouseenter', 'div.dw-reactions-button', function(e){
+			if($(this).parent().data('type')=='vote'){
+				$(this).addClass('reaction-show');
+			}
+		});
 
-	$(document).on('mouseleave', 'div.dw-reactions-button', function(e){
+		$(document).on('mouseleave', 'div.dw-reactions-button', function(e){
 			$(this).removeClass('reaction-show');
-	});
+		});
+	}
 
-	// モバイル用: タップでリアクションボックスを表示
+	// モバイル用: タップでリアクションボックスを表示/非表示
 	$(document).on('touchstart', '.dw-reactions-main-button:not(.dw_reaction_like, .dw_reaction_love, .dw_reaction_haha, .dw_reaction_wow, .dw_reaction_sad, .dw_reaction_angry)', function(e){
 		var parent = $(this).parent();
-		if(parent.parent().data('type')=='vote' && !parent.hasClass('reaction-show')){
+		if(parent.parent().data('type')=='vote'){
 			e.preventDefault();
 			e.stopPropagation();
-			isProcessingTouch = true;
+			touchStartTime = Date.now();
 			
-			// 他のリアクションボックスを閉じる
-			$('div.dw-reactions-button').removeClass('reaction-show');
-			// このリアクションボックスを表示
-			parent.addClass('reaction-show');
+			// すでに開いているリアクションボックスがあれば閉じる
+			if(openReactionBox && openReactionBox[0] !== parent[0]){
+				openReactionBox.removeClass('reaction-show');
+			}
 			
-			// 少し遅延してから外側タップの監視を有効化
-			setTimeout(function(){
-				isProcessingTouch = false;
-			}, 300);
+			// このリアクションボックスをトグル
+			if(!parent.hasClass('reaction-show')){
+				parent.addClass('reaction-show');
+				openReactionBox = parent;
+			} else {
+				parent.removeClass('reaction-show');
+				openReactionBox = null;
+			}
 			
 			return false;
 		}
 	});
 
-	// PC用: クリックでリアクションボックスを表示（タッチデバイス以外）
-	$(document).on('click', '.dw-reactions-main-button:not(.dw_reaction_like, .dw_reaction_love, .dw_reaction_haha, .dw_reaction_wow, .dw_reaction_sad, .dw_reaction_angry)', function(e){
-		// タッチデバイスでは touchstart で処理済みなのでスキップ
-		if(isProcessingTouch) return false;
+	// PC用: クリックでリアクションボックスを表示
+	if (!isTouchDevice) {
+		$(document).on('click', '.dw-reactions-main-button:not(.dw_reaction_like, .dw_reaction_love, .dw_reaction_haha, .dw_reaction_wow, .dw_reaction_sad, .dw_reaction_angry)', function(e){
+			var parent = $(this).parent();
+			if(parent.parent().data('type')=='vote' && !parent.hasClass('reaction-show')){
+				e.preventDefault();
+				e.stopPropagation();
+				// 他のリアクションボックスを閉じる
+				$('div.dw-reactions-button').removeClass('reaction-show');
+				// このリアクションボックスを表示
+				parent.addClass('reaction-show');
+				return false;
+			}
+		});
+	}
+
+	// リアクションボックス外をタップしたら閉じる（モバイル用）
+	$(document).on('touchend', function(e){
+		// タップ直後（500ms以内）は無視
+		if(Date.now() - touchStartTime < 500) return;
 		
-		var parent = $(this).parent();
-		if(parent.parent().data('type')=='vote' && !parent.hasClass('reaction-show')){
-			e.preventDefault();
-			e.stopPropagation();
-			// 他のリアクションボックスを閉じる
-			$('div.dw-reactions-button').removeClass('reaction-show');
-			// このリアクションボックスを表示
-			parent.addClass('reaction-show');
-			return false;
+		if(openReactionBox && !$(e.target).closest('.dw-reactions-button').length){
+			openReactionBox.removeClass('reaction-show');
+			openReactionBox = null;
 		}
 	});
 
-	// リアクションボックス外をタップ/クリックしたら閉じる
-	$(document).on('touchstart click', function(e){
-		// タップ処理中は無視
-		if(isProcessingTouch) return;
-		
-		if(!$(e.target).closest('.dw-reactions-button').length){
-			$('div.dw-reactions-button').removeClass('reaction-show');
-		}
-	});
+	// リアクションボックス外をクリックしたら閉じる（PC用）
+	if (!isTouchDevice) {
+		$(document).on('click', function(e){
+			if(!$(e.target).closest('.dw-reactions-button').length){
+				$('div.dw-reactions-button').removeClass('reaction-show');
+			}
+		});
+	}
 
 	$(document).on('taphold','div.dw-reactions-button',function(e){
 		if($(this).parent().data('type')=='vote'){
@@ -89,7 +106,7 @@
 	$('div.dw-reactions-button').disableSelection();
 
 	// リアクションアイコンをタップ/クリック
-	$(document).on('touchend click', '.dw-reaction', function(e){
+	$(document).on('touchstart click', '.dw-reaction', function(e){
 		e.preventDefault();
 		e.stopPropagation();
 
@@ -105,7 +122,10 @@
 			case 'sad': like_type=5; break;
 			case 'angry': like_type=6; break;
 		}
+		
+		// リアクションボックスを閉じる
 		$('div.dw-reactions-button').removeClass('reaction-show');
+		openReactionBox = null;
 
 		$.ajax({
 			url: '/public/ajax/favorites.php',
