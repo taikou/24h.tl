@@ -17,30 +17,28 @@
 
 	// 開いているリアクションボックスを追跡
 	var openReactionBox = null;
-	var lastTouchTime = 0;
-	var isTouch = false;
 
-	// PC用: マウスホバーでリアクションボックスを表示（タッチ後500ms以内は無視）
+	// PC用: マウスホバーでリアクションボックスを表示
 	$(document).on('mouseenter', 'div.dw-reactions-button', function(e){
-		if(Date.now() - lastTouchTime > 500 && $(this).parent().data('type')=='vote'){
+		if($(this).parent().data('type')=='vote'){
 			$(this).addClass('reaction-show');
+			openReactionBox = $(this);
 		}
 	});
 
 	$(document).on('mouseleave', 'div.dw-reactions-button', function(e){
-		if(Date.now() - lastTouchTime > 500){
-			$(this).removeClass('reaction-show');
+		$(this).removeClass('reaction-show');
+		if(openReactionBox && openReactionBox[0] === $(this)[0]){
+			openReactionBox = null;
 		}
 	});
 
-	// モバイル/タッチデバイス用: タップでリアクションボックスを表示/非表示
-	$(document).on('touchstart', '.dw-reactions-main-button:not(.dw_reaction_like, .dw_reaction_love, .dw_reaction_haha, .dw_reaction_wow, .dw_reaction_sad, .dw_reaction_angry)', function(e){
+	// モバイル用: クリック/タップでリアクションボックスをトグル
+	$(document).on('click', '.dw-reactions-main-button:not(.dw_reaction_like, .dw_reaction_love, .dw_reaction_haha, .dw_reaction_wow, .dw_reaction_sad, .dw_reaction_angry)', function(e){
 		var parent = $(this).parent();
 		if(parent.parent().data('type')=='vote'){
 			e.preventDefault();
 			e.stopPropagation();
-			lastTouchTime = Date.now();
-			isTouch = true;
 			
 			// すでに開いているリアクションボックスがあれば閉じる
 			if(openReactionBox && openReactionBox[0] !== parent[0]){
@@ -60,39 +58,8 @@
 		}
 	});
 
-	// PC用: クリックでリアクションボックスを表示（タッチイベント後は無視）
-	$(document).on('click', '.dw-reactions-main-button:not(.dw_reaction_like, .dw_reaction_love, .dw_reaction_haha, .dw_reaction_wow, .dw_reaction_sad, .dw_reaction_angry)', function(e){
-		// タッチイベントの直後（500ms以内）はクリックイベントを無視
-		if(Date.now() - lastTouchTime < 500) return false;
-		
-		var parent = $(this).parent();
-		if(parent.parent().data('type')=='vote' && !parent.hasClass('reaction-show')){
-			e.preventDefault();
-			e.stopPropagation();
-			// 他のリアクションボックスを閉じる
-			$('div.dw-reactions-button').removeClass('reaction-show');
-			// このリアクションボックスを表示
-			parent.addClass('reaction-show');
-			openReactionBox = parent;
-			return false;
-		}
-	});
-
-	// リアクションボックス外をタップしたら閉じる
-	$(document).on('touchend', function(e){
-		// タップ直後（500ms以内）は無視
-		if(Date.now() - lastTouchTime < 500) return;
-		
-		if(openReactionBox && !$(e.target).closest('.dw-reactions-button').length){
-			openReactionBox.removeClass('reaction-show');
-			openReactionBox = null;
-		}
-	});
-
-	// リアクションボックス外をクリックしたら閉じる（タッチイベント後は無視）
+	// リアクションボックス外をクリック/タップしたら閉じる
 	$(document).on('click', function(e){
-		if(Date.now() - lastTouchTime < 500) return;
-		
 		if(openReactionBox && !$(e.target).closest('.dw-reactions-button').length){
 			openReactionBox.removeClass('reaction-show');
 			openReactionBox = null;
@@ -109,53 +76,8 @@
 
 	$('div.dw-reactions-button').disableSelection();
 
-	// リアクションアイコンをタップ（タッチデバイス用）
-	$(document).on('touchstart', '.dw-reaction', function(e){
-		e.preventDefault();
-		e.stopPropagation();
-		lastTouchTime = Date.now();
-
-		var t = $(this), $class = t.attr('class'), main = t.parent().parent().parent(), vote_type = main.attr('data-type'), voted = main.attr('data-vote'), text = t.find('strong').text();
-		
-		res = $class.split(' ');
-		type = res[1].split('-');
-		switch(type[2]){
-			case 'like': like_type=1; break;
-			case 'love': like_type=2; break;
-			case 'haha': like_type=3; break;
-			case 'wow': like_type=4; break;
-			case 'sad': like_type=5; break;
-			case 'angry': like_type=6; break;
-		}
-		
-		// リアクションボックスを閉じる
-		$('div.dw-reactions-button').removeClass('reaction-show');
-		openReactionBox = null;
-
-		$.ajax({
-			url: '/public/ajax/favorites.php',
-			dataType: 'json',
-			type: 'POST',
-			data: {
-				id: main.data('post'),
-				token: main.data('token'),
-				type: like_type,
-			},
-			success: function(data) {
-	//				$('.dw-reactions-post-'+main.data('post')).find('.dw-reactions-count').html(data.data.html);
-					$('.dw-reactions-post-'+main.data('post')).find('.dw-reactions-main-button').attr('class','dw-reactions-main-button').addClass('dw_reaction_'+type[2]).text(text);
-					main.attr('data-vote','yes').data('type','unvote');
-			}
-		});
-		
-		return false;
-	});
-
-	// リアクションアイコンをクリック（PC用）
+	// リアクションアイコンをクリック/タップして選択
 	$(document).on('click', '.dw-reaction', function(e){
-		// タッチイベントの直後は無視
-		if(Date.now() - lastTouchTime < 500) return false;
-		
 		e.preventDefault();
 		e.stopPropagation();
 
