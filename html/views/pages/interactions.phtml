@@ -1,0 +1,154 @@
+<?php 
+$countPost = count( $this->data );
+$countPost = 100;
+if( !Session::get( 'authenticated' ) ) :
+	
+	header( 'location: '.URL_BASE );
+	exit;
+
+endif;
+include 'views/inc/header.php'; 
+?>
+
+<style>
+	
+	body
+	{
+		background-position: <?php echo $this->infoSession->bg_position; ?> 55px;
+		background-attachment: <?php echo $this->infoSession->bg_attachment; ?>;
+		
+		<?php if( $this->infoSession->bg_attachment == 'fixed' ): ?>
+		background-repeat: repeat repeat; 
+		<?php else: ?>
+		background-repeat: no-repeat; 
+		<?php endif; ?>
+		
+		background-color: <?php echo $this->infoSession->bg_color; ?>;
+		
+		<?php if( $this->infoSession->bg != '' ): ?>
+		background-image: url(<?php echo URL_BASE.'public/backgrounds/'.$this->infoSession->bg; ?>);
+		<?php endif; ?>
+	}
+	
+		<?php include('views/inc/ios_background.php'); ?>
+
+	body a,
+	body a:hover { color: <?php echo $this->infoSession->color_link; ?>; }
+	
+	.icons { background-color: <?php echo $this->infoSession->color_link; ?>;}
+</style>
+
+
+<link href="<?php echo $_layoutParams['root_css']; ?>colorbox.css" rel="stylesheet" />
+</head>
+<!-- Body -->
+	<body data-max="<?php echo MAX_LENGTH; ?>">
+		
+	<?php include 'views/inc/navigation.php';  ?>
+	
+	 <!-- container -->  
+    <div class="container container-auth">
+    	
+    	<!-- row -->  
+    	<div class="row col-pb">
+     
+			
+			
+<div class="col-md-8">
+				
+		<div class="panel panel-default panel-live">
+			
+			<div class="panel-heading grid-panel-title">
+    <h3 class="panel-title titleBar" data-title="<?php echo  $this->title; ?>"><?php if( isset( $this->title ) ): echo stripslashes( $this->title ); endif; ?></h3>
+  </div>
+
+<div class="posts">
+			
+		<div class="loading-bar load"></div>
+			
+		<?php if( $this->$countPost == 0 ): ?>
+		
+			<div class="panel-footer notfound text-center" style="display: none;">
+				<?php echo $_SESSION['LANG']['no_results']; ?>
+			</div>
+		<?php endif; ?>
+	</div><!-- posts -->
+</div>
+</div><!--/col-md-* -->
+ 			
+		     <!-- col-md-* -->  
+		     <div class="col-md-4">
+		     	
+			<div class="popout"></div>
+			
+	<button type="button" class="btn btn-info btn-block btn-border btn-lg show-toogle" data-toggle="collapse" data-target=".navleft-collapse">
+		   <i class="fa fa-bars"></i>
+		</button>
+		
+		<div class="collapsexxx navleft-collapse">
+			
+			<?php 
+			//<---- Profile Card
+			include 'views/inc/profile_static.php'; 
+			
+			//<---- * advertising * --->
+		   include 'views/inc/advertising.php';
+		   
+		    //<---- * who_follow * --->
+		   include 'views/inc/who_to_follow.php';
+		   
+		    //<---- * trending * --->
+		   include 'views/inc/trending.php'; 
+		   
+		   //<--- * Footer * --->
+		   include 'views/inc/footer_session.php';
+		   
+			?>
+			  </div><!-- collapse -->
+			</div><!-- *** col-md-4 *** -->
+ 			
+		</div><!-- *** row *** -->
+	</div><!-- **************** container **************** -->
+	
+
+	<script src="<?php echo $_layoutParams['root_js']; ?>jquery.min.js"></script>
+   <script src="<?php echo $_layoutParams['root_js']; ?>jquery.easing.1.3.js"></script>
+    <script src="<?php echo $_layoutParams['root_js']; ?>jquery-ui-1.10.3.custom.min.js"></script>
+   <script src="<?php echo $_layoutParams['root_js']; ?>jquery.ui.touch-punch.min.js"></script>
+   <script src="<?php echo $_layoutParams['root_js']; ?>bootstrap.min.js"></script>
+   <script src="<?php echo $_layoutParams['root_js']; ?>bootstrap-switch.js"></script>
+   <script src="<?php echo $_layoutParams['root_js']; ?>functions.js"></script>
+   <script src="<?php echo $_layoutParams['root_js']; ?>count.js"></script>
+   <script src="<?php echo $_layoutParams['root_js']; ?>add.post.js"></script>
+   <script src="<?php echo $_layoutParams['root_js']; ?>jquery.form.js"></script>
+   <script src="<?php echo $_layoutParams['root_js']; ?>timeago/jqueryTimeago_<?php echo $_SESSION['lang']; ?>.js"></script>
+   <script src="<?php echo $_layoutParams['root_js']; ?>jquery.colorbox.js"></script>
+   <script src="<?php echo $_layoutParams['root_js']; ?>jquery.scroll.user.js"></script>
+   
+      <script src="https://unpkg.com/smartphoto@1.1.0/js/jquery-smartphoto.min.js"></script>
+
+   <script type="text/javascript">
+   
+   $(".galeryAjax").colorbox({
+   	fixed: false,
+   	maxHeight: 550
+   	});
+   	
+   	$('.posts').scrollPagination({
+		nop     : 10,
+		offset  : 0,
+		error   : '',
+		delay   : 500,
+		              
+		scroll  : true, 
+		query   : 0,
+		file    : '<?php echo $this->_file; ?>',
+		_userId : '',
+		totalGlobal : <?php echo $countPost; ?>
+	});
+
+         //<**** - Tooltip
+    $('.showTooltip').tooltip();
+  </script>
+	</body>
+</html>

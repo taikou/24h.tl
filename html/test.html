@@ -1,0 +1,32 @@
+<script>
+//last update 201808281620
+var keeptime = 1800 // 30min.
+var ss_key='index_session';
+var load_url = '/';
+
+
+var date = new Date();
+var timestamp = Math.floor(date.getTime()/1000);
+var ss = sessionStorage;
+if(ss.getItem(ss_key) && ss.getItem(ss_key + '_time')>(timestamp - keeptime)){
+	document.write(ss.getItem(ss_key));
+	console.log('session');
+}else{
+	var req = new XMLHttpRequest();
+	req.onreadystatechange = function() {
+
+	  if (req.readyState == 4) { // 通信の完了時
+		if (req.status == 200) { // 通信の成功時
+			document.write(req.responseText);
+			console.log('ajax');
+			ss.setItem(ss_key,req.responseText);
+			ss.setItem(ss_key + '_time',timestamp);
+		}
+	  }else{
+	 //   result.innerHTML = "loading...";
+	  }
+	}
+	req.open('GET', load_url, true);
+	req.send(null);
+}
+</script>

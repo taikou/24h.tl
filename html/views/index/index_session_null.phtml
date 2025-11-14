@@ -1,0 +1,337 @@
+<?php include 'views/inc/header.php';
+//<------ * TITLE LANG  * ------>
+foreach ( _Function :: arrayLang() as $key => $value ) : 							
+$explode = explode( '-', $key );
+	if( $explode[1] == null ) {
+		$explode[1] = $explode[0];
+	}
+	
+if( $value ==  $_SESSION['lang'] ){
+	$_SESSION['lang_now'] = $explode[1];
+}
+endforeach; ?>
+<link href='https://fonts.googleapis.com/css?family=Fjalla+One' rel='stylesheet' type='text/css' />
+<link rel="canonical" href="<?php echo URL_BASE; ?>">
+
+<? if(preg_match('/24h_timeline/',$_SERVER['HTTP_USER_AGENT'])){ //初回起動時にafiliと紐付けるためブラウザ起動 ?>
+   <script> 
+   function gonative_device_info(info){
+   		if(info.isFirstLaunch==true and info.appVersion!='1.0.6'){
+			location.href='https://24h.tl/?firstapplaunch';
+		}else{
+			<?=$jump_discover?>
+		}
+   }
+   </script>
+<? }else{ ?>
+<script><?=$jump_discover?></script>
+<? } ?>
+</head>
+<style>
+	body#index-login{
+		background: url(/public/backgrounds/photo_<?=mt_rand(1,130)?>.jpg) no-repeat fixed;
+	}
+	.title-home {
+  		margin-top: -20px;
+	
+	}
+	<?php if(preg_match('/(iphone|ipad)/i',$_SERVER['HTTP_USER_AGENT'])){ ?>
+	
+	body::before {
+		position:fixed;
+		top:0;
+		left:0;
+		z-index:-1;
+		height:110%;
+		width:100%;
+		background-position: 50% 0%;
+		background-image:url(<?php echo URL_BASE.'public/backgrounds/photo_'.mt_rand(1,130); ?>.jpg);
+		<?php if( $this->infoSession->bg_attachment == 'fixed' ): ?>
+		background-repeat: repeat repeat; 
+		<?php else: ?>
+		background-repeat: no-repeat; 
+		<?php endif; ?>		
+		-webkit-background-size:contain;
+		background-size:270% auto;
+		content:"";
+	}
+	<?php } ?>
+</style>
+  <body id="index-login">
+  	<!-- navbar -->
+    <div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+    	<!-- container -->
+      <div class="container">
+      	<div class="popout"></div>
+
+      	<!-- navbar-header -->
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand">
+          	<?php include 'views/inc/logo.php'; ?>
+          	</a>
+        </div><!-- navbar-header -->
+        
+        <!-- collapse-->
+        <div class="collapse navbar-collapse">
+        	
+          <ul class="nav navbar-nav navbar-right">
+          	
+          <li class="dropdown">
+          	<a class="menu-top" id="dropdownMenu1" data-toggle="dropdown" href="#">
+          		<?php echo $_SESSION['LANG']['lang_title']. ' : <strong>' .$_SESSION['lang_now'].'</strong>'; ?> <i class="fa fa-caret-down"></i>
+          	</a>       
+          	   	
+           <ul class="dropdown-menu menu-home-dropdown dropdown-home arrow-up" role="menu" aria-labelledby="dropdownMenu1">
+          	
+          	<?php foreach ( _Function :: arrayLang() as $key => $value ) : 
+										
+			$explode = explode( '-', $key );
+			
+			if( $explode[1] == null ) {
+				$explode[1] = $explode[0];
+			}
+			
+			
+			if( $value ==  $_SESSION['lang'] ){
+				$classActive = ' class="active"';
+				$urlLanguage = '';
+			} else {
+				$classActive = null;
+				$urlLanguage = 'href="'.URL_BASE.'?lang='.$value.'"';
+			}
+				?>
+				<li <?php echo $classActive; ?> role="presentation">
+					<a class="showTooltip" title="<?php echo $explode[0]; ?>" data-toggle="tooltip" data-placement="top" role="menuitem" tabindex="-1" <?php echo $urlLanguage; ?>>
+						<?php echo $explode[1]; ?>
+						</a>
+					</li>
+				<?php endforeach;  ?>
+          	
+          	 </ul>
+           </li>
+        
+          </ul>
+        </div><!--/.nav-collapse -->
+      </div><!--/.container -->
+    </div><!-- navbar -->
+    
+    <!-- container -->
+    <div class="container container-main">
+    	<!-- col-md -->
+    	<div class="col-md-8 col-pb">
+    			<h1 class="title-home"><?php echo $_SESSION['LANG']['welcome_title']; ?></h1>
+    			<h6 class="sub-title-home">
+    				<?php echo $_SESSION['LANG']['welcome_text']; ?>
+    				</h6>
+    				
+    	</div><!--/col-md-8 -->
+    	
+      <!-- col-md -->
+      <div class="col-md-4">
+
+      	
+      	      	
+        <?php if( NEW_REGISTRATIONS == 1 ) : ?>
+        <!-- Start Login Form -->
+      	<div class="panel panel-default panel-login">
+          <div class="login-form">
+          	<form action="" method="post" name="form" id="signup_form">
+<?php // メールアドレスでの登録を停止　
+///*			?>	  
+            <div class="form-group">
+              <input type="text" class="form-control login-field" value="" name="full_name" id="full_name" placeholder="<?php echo $_SESSION['LANG']['full_name']; ?>" title="<?php echo $_SESSION['LANG']['full_name']; ?>">
+              <label class="login-field-icon fui-user" for="full_name"></label>
+            </div>
+            
+            <div class="form-group">
+              <input type="text" class="form-control login-field" name="username" id="username" placeholder="<?php echo $_SESSION['LANG']['username']; ?>" minlength="4" maxlength="15" title="<?php echo $_SESSION['LANG']['username']; ?>">
+              <label class="login-field-icon fui-user" for="username"></label>
+            </div>
+            
+            <div class="form-group">
+              <input type="text" class="form-control login-field" name="email" id="email" placeholder="<?php echo $_SESSION['LANG']['mail']; ?>" title="<?php echo $_SESSION['LANG']['mail']; ?>">
+              <label class="login-field-icon fui-mail" for="email"></label>
+            </div>
+            
+            <div class="form-group">
+              <input type="password" class="form-control login-field" name="password" id="password" placeholder="<?php echo $_SESSION['LANG']['placeholder_pass']; ?>" title="<?php echo $_SESSION['LANG']['placeholder_pass']; ?>">
+              <label class="login-field-icon fui-lock" for="password"></label>
+            </div>
+            
+            <div class="form-group">
+              <input type="text" class="form-control login-field" name="captcha" id="lcaptcha" placeholder="" title="">
+              <label class="login-field-icon fui-lock" for="lcaptcha"></label>
+            </div>
+           
+           <div class="alert alert-success" id="success" role="alert"></div>
+           <div class="alert alert-danger" id="errorSignUp" role="alert"></div>
+         
+           <button type="submit" id="buttonSubmit" class="btn btn-block btn-lg btn-success"><?php echo $_SESSION['LANG']['sign_up']; ?></button>
+<?php //*/ 
+?>
+<?php if( YOUR_CONSUMER_KEY != '' || APP_ID != '' ) : ?>
+			<span class="login-link" id="twitter-btn-text"><?php echo $_SESSION['LANG']['or_sign_up_with']; ?></span>
+	<?php endif; ?>
+
+	<?php if( APP_ID != '' ) : ?>	           	
+	           	<div class="facebook-login">
+	           		<a href="<?php echo URL_BASE; ?>oauth/?oauth_provider=facebook" class="fb-button btn btn-block btn-lg btn-primary"><i class="fa fa-facebook"></i> 
+	           	facebook
+	         </a>
+	           	</div>
+	           	<?php endif; ?>
+	        
+	        
+	        <?php if( YOUR_CONSUMER_KEY != '' ) : ?>   	
+					<div class="facebook-login" id="twitter-btn">
+						<a href="<?php echo URL_BASE; ?>oauth/?oauth_provider=twitter" class="btn btn-block btn-lg btn-info"><i class="fa fa-twitter"></i> Twitter</a>
+					</div>
+		<?php endif; ?>
+					
+    	<label class="checkbox-inline">
+		  <input type="checkbox" value="1" name="terms" id="terms" tabindex="3" checked="checked"> 
+		   <span class="label-terms"><?php echo $_SESSION['LANG']['terms']; ?></span>
+		</label>
+
+          </div>
+          </form><!--./form -->
+        </div><!-- /End Login Form -->
+        
+        <?php endif; ?>
+        	      	      	
+      	      	      	      	
+      	      	      	      	      	      	
+      	<!-- Start Login Form -->
+      	<div class="panel panel-default panel-login">
+      		
+          <div class="login-form">
+          	
+          	<!-- recover form -->
+          	<form style="display: none;" action="" method="post" name="form" id="recover_pass_form" class="recoverForm">
+	            <div class="form-group">
+	              <input type="text" class="form-control login-field" name="email_recover" id="email_recover" placeholder="<?php echo $_SESSION['LANG']['placeholder_email_recover']; ?>" title="<?php echo $_SESSION['LANG']['placeholder_email_recover']; ?>">
+	              <label class="login-field-icon fui-mail" for="email_recover"></label>
+	            </div>
+	            <div class="alert alert-danger" id="error_recover" role="alert"></div>
+	            <div class="alert alert-success" id="success_recover" role="alert"></div>
+	            
+	            <button type="submit" class="btn btn-primary btn-lg btn-block" id="buttonRecoverPass"><?php echo $_SESSION['LANG']['send']; ?></button>
+	            <a class="login-link link-home buttonBack" href="javascript:void(0);"><i class="fa fa-arrow-left"></i> <?php echo $_SESSION['LANG']['back']; ?></a>
+	           
+	         
+          </form><!--./form -->
+          
+          	
+          	<form action="" method="post" name="form" id="signin_form" class="signInForm">
+	            <div class="form-group">
+	              <input type="text" class="form-control login-field" name="user" id="user" placeholder="<?php echo $_SESSION['LANG']['placeholder_email_username']; ?>" title="<?php echo $_SESSION['LANG']['placeholder_email_username']; ?>">
+	              <label class="login-field-icon fui-user" for="user"></label>
+	            </div>
+	
+	            <div class="form-group">
+	              <input type="password" class="form-control login-field" name="password" id="password_signin" placeholder="<?php echo $_SESSION['LANG']['placeholder_pass']; ?>" title="<?php echo $_SESSION['LANG']['placeholder_pass']; ?>">
+	              <label class="login-field-icon fui-lock" for="password_signin"></label>
+	            </div>
+	            
+	            <div class="alert alert-danger" id="error" role="alert"></div>
+	            <div class="alert alert-success" id="success_signin" role="alert"></div>
+	            
+	            <button type="submit" class="btn btn-primary btn-lg btn-block" id="buttonSignIn" data-wait="<?php echo $_SESSION['LANG']['please_wait']; ?>"><?php echo $_SESSION['LANG']['sign_in']; ?></button>
+	          
+	          <?php if( YOUR_CONSUMER_KEY != '' || APP_ID != '' ) : ?> 
+	           <span class="login-link"><?php echo $_SESSION['LANG']['or_sign_in_with']; ?></span>
+	           <?php endif; ?>
+	           
+	           <?php if( APP_ID != '' ) : ?>
+	           	<div class="facebook-login">
+	           		<a href="<?php echo URL_BASE; ?>oauth/?oauth_provider=facebook" class="fb-button btn btn-block btn-lg btn-primary"><i class="fa fa-facebook"></i> 
+	           	facebook
+	         </a>
+	           	</div>
+	           	<?php endif; ?>
+	           	
+	           	
+	           	<?php if( YOUR_CONSUMER_KEY != '' ) : ?>
+					<div class="facebook-login">
+						<a href="<?php echo URL_BASE; ?>oauth/?oauth_provider=twitter" class="btn btn-block btn-lg btn-info"><i class="fa fa-twitter"></i> Twitter</a>
+					</div>
+					<?php endif; ?>
+	           
+	            <a class="login-link link-home buttonForgot" href="javascript:void(0);"><?php echo $_SESSION['LANG']['placeholder_forgot_pass']; ?></a>
+	            
+	            <div class="btn-block text-center">
+	            	<label class="checkbox-inline">
+					  <input type="checkbox" value="1" name="Keeplogged" id="Keeplogged" tabindex="3"> 
+					   <span class="label-terms"><?php echo $_SESSION['LANG']['keep_logged']; ?></span>
+					</label>
+	            </div>
+		
+	          </div><!-- login-form -->
+          </form><!--./form -->
+        </div><!-- /End panel-login -->
+        
+      
+      </div><!--/col-md-4 -->
+            
+      <footer class="btn-block footer-grid">
+        <p class="footer-p">
+        	<?php foreach( $this->pagesGeneral as $key ) : ?>
+        		<a class="link-footer" href="<?php echo URL_BASE.$key['url'].'/'; ?>"><?php echo $key['title']; ?></a> 
+			<?php endforeach; ?>
+			
+			<a class="link-footer" href="<?php echo URL_BASE.'api/'; ?>">API</a>
+
+	    	&copy; <?php echo date('Y')." Decoo"; ?>
+	    </p>
+      </footer>
+      
+    </div><!-- /.container -->
+		
+		
+   <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="<?php echo $_layoutParams['root_js']; ?>jquery.min.js"></script>
+    <script src="<?php echo $_layoutParams['root_js']; ?>jquery-ui-1.10.3.custom.min.js"></script>
+    <script src="<?php echo $_layoutParams['root_js']; ?>jquery.ui.touch-punch.min.js"></script>
+    <script src="<?php echo $_layoutParams['root_js']; ?>bootstrap.min.js"></script>
+    <script src="<?php echo $_layoutParams['root_js']; ?>bootstrap-switch.js"></script>
+    <script src="<?php echo $_layoutParams['root_js']; ?>flatui-checkbox.js"></script>
+    <script src="<?php echo $_layoutParams['root_js']; ?>functions-user.js"></script>
+   <script src="<?php echo $_layoutParams['root_js']; ?>login.sign.up.js"></script>
+   
+   <script type="text/javascript">
+	
+   jQuery(document).ready(function($) {
+  
+  <?php if( $this->accountValidate == 1 && isset( $_GET['validate'] ) ): ?>
+  $('.popout').html( '<?php echo $_SESSION['LANG']['accoun_validated'] ?>' ).fadeIn( 500 );
+  <?php endif; ?>
+  
+  <?php if( $this->accountValidate == 0 && isset( $_GET['validate'] ) ): ?>
+  $('.popout').html( '<?php echo $_SESSION['LANG']['code_not_valid'] ?>' ).fadeIn( 500 );
+  <?php endif; ?>
+  
+  
+ 
+   });
+   
+
+  </script>
+  
+
+  
+
+
+<? include('views/inc/footer.php'); ?>
+
+  </body>
+</html>
+
+   

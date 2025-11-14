@@ -1,0 +1,518 @@
+	<script src="<?php echo $_layoutParams['root_js']; ?>jquery.min.js"></script>
+<?php 
+if($_SESSION['api_post']){
+	$auto_post_text=htmlspecialchars($_SESSION['api_post']);
+	$_SESSION['api_post']=null;
+}
+$countPost = count($this->posts);
+if( $this->infoSession->status == 'active' ):
+
+	//afiliに成果を送信
+	if($this->infoSession->afili_cid and !$this->infoSession->afili_sendresult_time and $this->dataFollowers->totalFollowers>=5){
+		$sendresulturl='https://afi.li/track.php?t=zYOJ2d2o&p=5acf980b2034e&cid='.$this->infoSession->afili_cid;
+		@file($sendresulturl);
+		$sql="UPDATE users SET afili_sendresult_time='".time()."' WHERE id='".$this->infoSession->id."' LIMIT 1";
+//		error_log('--------------------------------'.$sql);
+		$this->db       = SPDO::singleton();
+		$this->db->query($sql);
+	}
+
+include 'views/inc/header.php'; 
+	
+	/* CLASS NO POST */
+	if( $countPost == 0 ) {
+		$no_post_class = null;
+	} else {
+		$no_post_class = ' post-user-profile';
+	}
+?>
+<style>
+	
+	body
+	{
+		background-position: <?php echo $this->infoSession->bg_position; ?> 55px;
+		background-attachment: <?php echo $this->infoSession->bg_attachment; ?>;
+		
+		<?php if( $this->infoSession->bg_attachment == 'fixed' ): ?>
+		background-repeat: repeat repeat; 
+		<?php else: ?>
+		background-repeat: no-repeat; 
+		<?php endif; ?>
+		
+		background-color: <?php echo $this->infoSession->bg_color; ?>;
+		
+		<?php if( $this->infoSession->bg != '' ): ?>
+		background-image: url(<?php echo URL_BASE.'public/backgrounds/'.$this->infoSession->bg; ?>);
+		<?php endif; ?>
+	}
+	
+	<?php include('views/inc/ios_background.php'); ?>
+	
+	body a,
+	body a:hover { color: <?php echo $this->infoSession->color_link; ?>; }
+	
+	.icons { background-color: <?php echo $this->infoSession->color_link; ?>;}
+	
+</style>
+<link href="<?php echo $_layoutParams['root_css']; ?>colorbox.css" rel="stylesheet" />
+<link href="<?php echo $_layoutParams['root_css']; ?>jquery-ui-1.8.2.custom.css" rel="stylesheet" />
+<script>
+if (window.performance) {
+  if (performance.navigation.type === 1) {
+    // リロードされた
+	var ss = sessionStorage;
+	ss.removeItem('first_load_posts');
+	ss.removeItem('first_load_posts_time');
+	ss.removeItem('index_session');
+	ss.removeItem('index_session_time');
+  }
+}
+</script>
+<? if(preg_match('/24h_timeline/',$_SERVER['HTTP_USER_AGENT']) and !$_SESSION['onesignal']){ ?>
+<script>
+function gonative_onesignal_info(info) {
+    $.ajax('/public/ajax/set_onesignal_tag.php',{
+		data: info,
+		type: 'post'
+	});	
+}
+</script>
+<? }else{ ?>
+<!-- webpush -->
+<link rel="manifest" href="/manifest.json" />
+<script src="https://cdn.onesignal.com/sdks/OneSignalSDK.js" async=""></script>
+<script>
+  var OneSignal = window.OneSignal || [];
+  OneSignal.push(function() {
+    OneSignal.init({
+      appId: "8af3f38a-d025-42e7-a06d-a0ac4d56ea2b",
+    });
+	OneSignal.sendTags({
+		user_id: <?=$this->infoSession->id?>
+	});
+  });
+</script>
+<!-- end of webpush -->
+<? } ?>
+</head>
+<!-- Body -->
+	<body data-max="<?php echo MAX_LENGTH; ?>" data-accept="<?php echo $_SESSION['LANG']['accept']; ?>" data-cancel="<?php echo $_SESSION['LANG']['cancel']; ?>">
+		
+    <?php include 'views/inc/navigation.php'; ?>
+    
+    <?
+	if(is_array($_SESSION['LANG']['what_new'])){
+		$lang_what_new=$_SESSION['LANG']['what_new'][mt_rand(0,(count($_SESSION['LANG']['what_new'])-1))];
+	}else{
+		$lang_what_new=$_SESSION['LANG']['what_new'];
+	}
+	?>
+    <!-- container -->  
+    <div class="container container-auth">
+    	
+    	<!-- row -->  
+    	<div class="row col-pb">
+     
+
+			
+			<div class="col-md-7">
+				
+				<!-- Start panel -->
+     <div class="panel panel-default">
+		  	<div class="panel-body">
+		  
+		  <form class="add-post" action="<?php echo URL_BASE; ?>public/ajax/upload.php" method="post" accept-charset="UTF-8" id="form_add_post" enctype="multipart/form-data" onSubmit="return false;">
+		  			
+	  		<textarea class="form-control textarea-text" id="add_post" name="add_post" placeholder="<?php echo $lang_what_new; ?>"><?=$auto_post_text?></textarea>
+<?php
+if($this->infoSession->oauth_provider=='twitter' and $this->infoSession->twitter_oauth_token!='' and $this->infoSession->twitter_oauth_token_secret!=''){
+
+	?>
+			  <p style="text-align: right; margin-bottom: 0px; font-size: x-small;" class="checkbox-inline"><input id="auto_tweet" name="auto_tweet" value="on" type="checkbox" style="transform: scale(0.8);" <?=($_SESSION['auto_tweet_disable']?'':'checked')?>><?=$_SESSION['LANG']['auto_tweet']?></inpu></p>  
+	<?
+}			  
+			  
+?>
+	  		
+	  			  		
+	  		<input type="hidden" name="photoId" value="" id="photoId" />
+		  	
+		  	<input type="text" name="geolocation" value="" class="form-control input-sm" placeholder="<?php echo $_SESSION['LANG']['location']; ?>" style="display: none; margin: 10px 0 0;" id="geolocation" />
+		  	
+		  	<ul class="list-inline btn-block margin-zero list-emoticons-ui" id="emoticons-panel">
+		  		<?php include 'views/inc/emoticons.php'; ?>	
+		  	</ul>
+<?php /*		  	
+		  	<ul class="list-inline btn-block margin-zero list-emoticons-ui" id="demoji-panel">
+		  		<?php include 'views/inc/demojis.php'; ?>	
+		  	</ul>
+*/ ?>		  	
+		  	</div>
+					
+			<div class="panel-footer" style="padding-bottom: 5px;">
+				<div class="btn-group button-group-status">
+					<button type="button" class="btn btn-link btn-share " data-toggle="tooltip" id="upload-btn" title="<?php echo $_SESSION['LANG']['upload_image']; ?>" data-placement="top">
+						<i class="fa fa-camera"></i>
+						</button>
+						<input type="file" name="photo_upload" id="upload" accept="image/*" style="visibility: hidden;">
+						<button type="button" class="btn btn-link btn-share " id="emoticons"><i class="icon-happy2"></i></button>
+					<!--	<button type="button" class="btn btn-link btn-share " id="demojis"><i class="icon-happy"></i></button> -->
+						<button type="button" class="btn btn-link btn-share " id="geolocationBtn" data-toggle="tooltip" title="<?php echo $_SESSION['LANG']['location']; ?>" data-placement="top"><i class="icon-location"></i></button>
+				</div>
+					
+				<div class="pull-right">
+					<button data-title="<?php echo $_SESSION['LANG']['published_successfully']; ?>" id="button_add" type="button" type="submit" disabled="disabled" style="opacity: 0.5; cursor: default;" class="btn btn-sm btn-info <?php echo $no_post_class; ?>">
+						<?php echo $_SESSION['LANG']['send']; ?>
+					</button>
+				</div>
+			</form>
+			
+			<!-- Wrapper Preview -->
+						<div id="wrapper_preview">
+							<div id="container_preview">
+							</div>
+						</div><!-- Wrapper Preview -->
+					
+			</div><!-- Panel footer -->
+		</div><!-- Panel Defautl -->
+		
+		 <?php include 'views/inc/posts.php'; ?>
+	</div><!--/col-md-* -->
+  
+    	
+    	  	
+   
+		     <!-- col-md-* -->  
+		     <div class="col-md-5">
+		     	
+			<div class="popout"></div>
+			
+	<button type="button" class="btn btn-info btn-block btn-border btn-lg show-toogle" data-toggle="collapse" data-target=".navleft-collapse">
+		   <i class="fa fa-bars"></i>
+		</button>
+		
+		<div class=" navleft-collapse">
+			<?php 
+				   //<---- * profile_static * --->
+				   include 'views/inc/profile_static.php'; 
+				   
+				   //<---- * advertising * --->
+				   include 'views/inc/advertising.php';
+				   ?>
+				   
+				   <?php
+				   if( Session::get( 'authenticated' ) ) :
+				   //<---- * who_follow * --->
+				   include 'views/inc/who_to_follow.php';
+				   
+				   endif;
+				   //<---- * trending * --->
+				   include 'views/inc/trending.php'; 
+				   
+				   include 'views/inc/footer_session.php'; 
+				   
+				   ?>
+		
+		          </div><!-- navleft-collapse -->
+			</div><!--/col-md-* -->
+   	  	  	  	
+   	  	  	  	 	  	  	 	  	  	
+    	  	  	  	
+    	  	  	  	  	
+     	
+  </div><!--************ Row ********************-->
+  
+  </div><!--******************** Container ******************-->
+	
+
+<script>
+var scrool_top_icon='write';
+</script>
+	
+	
+   
+   <!-- Placed at the end of the document so the pages load faster -->
+	<script src="<?php echo $_layoutParams['root_js']; ?>jquery.min.js"></script>
+	<script src="<?php echo $_layoutParams['root_js']; ?>jquery-ui-1.10.3.custom.min.js"></script>
+	<script src="<?php echo $_layoutParams['root_js']; ?>jquery.ui.touch-punch.min.js"></script>
+	<script src="<?php echo $_layoutParams['root_js']; ?>bootstrap.min.js"></script>
+	<script src="<?php echo $_layoutParams['root_js']; ?>bootstrap-switch.js"></script>
+	<script src="<?php echo $_layoutParams['root_js']; ?>flatui-checkbox.js"></script>
+	<script src="<?php echo $_layoutParams['root_js']; ?>jquery.autosize.min.js"></script>
+	<script src="<?php echo $_layoutParams['root_js']; ?>functions-user.js"></script>
+	
+    
+   <script src="<?php echo $_layoutParams['root_js']; ?>functions.js?57"></script>
+   <script src="<?php echo $_layoutParams['root_js']; ?>count.js"></script>
+   <script src="<?php echo $_layoutParams['root_js']; ?>add.post.js?2"></script>
+   <script src="<?php echo $_layoutParams['root_js']; ?>jquery.form.js"></script>
+   <script src="<?php echo $_layoutParams['root_js']; ?>timeago/jqueryTimeago_<?php echo $_SESSION['lang']; ?>.js"></script>
+   <script src="<?php echo $_layoutParams['root_js']; ?>jquery.colorbox.js?3"></script>
+   <script src="https://unpkg.com/smartphoto@1.1.0/js/jquery-smartphoto.min.js"></script>
+
+   <script src="<?php echo $_layoutParams['root_js']; ?>jquery.scroll.js?23"></script>
+   <script src="<?php echo $_layoutParams['root_js']; ?>ajax.timeline.js?16"></script>
+   <script src="<?php echo $_layoutParams['root_js']; ?>mentions.js"></script>
+   <script src="<?php echo $_layoutParams['root_js']; ?>bootbox.min.js"></script>
+   <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAcmxUZ0iVE7VIn2tJthlPA8a7xQh794g0&amp;libraries=places"></script>
+   <script src="<?php echo $_layoutParams['root_js']; ?>jquery.geocomplete.js"></script>
+ 
+   <script src="/public/reactions/assets/js/script.js?18"></script>
+ 
+   <script type="text/javascript">
+
+   $(function(){
+  
+
+   $("#geolocation").geocomplete()
+        .bind("geocode:result", function(event, result){
+          });
+        });
+        
+   bootbox.setDefaults({
+  /**
+   * @optional String
+   * @default: en
+   * which locale settings to use to translate the three
+   * standard button labels: OK, CONFIRM, CANCEL
+   */
+  locale: "<?php echo $_SESSION['lang']; ?>"
+  
+});
+/*
+   $(".galeryAjax").colorbox({
+   	fixed: false,
+	 maxWidth:"100%",
+   	maxHeight: "100%",
+	width:"100%",
+	height:"100%"
+   	});
+ */  	
+   <?php if( $countPost != 0 ): ?>
+
+   $('.posts').scrollPagination({
+		nop     : 10,
+		offset  : 0,
+		error   : '',
+		delay   : 500,
+		              
+		scroll  : true, 
+		query   : 0,
+		file    : 'get_all_post.php',
+		totalGlobal :  <?php echo $countPost; ?>
+	});
+	
+	<?php endif; ?>
+	
+   jQuery(document).ready(function($) {
+
+   //====== TIME AGO
+	
+	
+	//<**** - TextArea
+    $('textarea').autosize();
+    
+	//=== COUNTER
+	$(document).on('mouseenter','#add_post', function(event){
+
+   		 if ($(this).data('hascharcount') == undefined) {
+			$(this).data('hascharcount', true).charCount({ allowed: <?php echo MAX_LENGTH; ?>, warning: 10, css: 'counter_2' });
+		}
+		
+   	});
+   	
+   	//=== COUNTER
+	$(document).on('mouseenter','#reply_post', function(event){
+
+   		 if ($(this).data('hascharcount') == undefined) {
+			$(this).data('hascharcount', true).charCount({ allowed: <?php echo MAX_LENGTH; ?>, warning: 10 });
+		}
+		
+   	});
+  
+
+       
+    //=================== * UPLOAD  * ===============//
+    $(document).on('change', '#upload', function(){     		 
+	  $('<div id="loader_gif"></div>').insertBefore('#upload');
+	  $('#button_add').attr({'disabled' : 'true'}).css({'opacity':'0.5','cursor':'default'});
+	  $('#add_post').attr({'disabled' : 'true'}).css({'opacity':'0.5'});
+					
+			
+			(function() {
+	  		
+	  		$("#form_add_post").ajaxForm({
+	  		
+	  		dataType : 'json',	
+			success:  function(e)
+			{
+				if( e ) {
+					$('#add_post').removeAttr('disabled').css({'opacity':'1'});
+					if( e.error == 1 ) {
+						$('#loader_gif').remove();
+					}
+					
+					$('#wrapper_preview').show();
+					$('#container_preview').html( ''+ e.output +'' ).show();
+					$('#upload').val('');
+					
+					if( e.error == 0 ) {
+						$('#loader_gif').css({background:'url("<?php echo URL_BASE; ?>thumb_fixed/60-60-tmp/'+ e.photo +'") center center no-repeat #FFF'}).addClass('deletePhoto').attr( 'data',e.photo ).attr( 'title','<?php echo $_SESSION['LANG']['delete_image']; ?>' );
+						$('#wrapper_preview').show();
+						$('#photoId').val(e.photo);
+						$('#button_add').removeAttr('disabled').css({'opacity':'1','cursor':'pointer'});
+					}
+					
+				} else {
+					bootbox.alert('<?php echo $_SESSION['LANG']['error']; ?>');
+					$('#upload').val('');
+					$('#button_add').removeAttr('disabled').css({'opacity':'1','cursor':'pointer'});
+					$('#loader_gif').remove();
+					
+				}
+			}//<----- SUCCESS
+			
+		}).submit();
+		})(); //<--- FUNCTION %
+	});//<--- LIVE
+	
+		//===== DELETE PHOTO
+		$(document).on('click', ".deletePhoto", function(){ 
+					//=== PARAM
+					var element     = $(this);
+					var id          = element.attr("data");
+					var info        = 'token_id=' + id;
+					var add_post_   = $('#add_post').val();
+								   		
+					$.ajax({
+					   type: "GET",
+					   url: "<?php echo URL_BASE; ?>public/ajax/delete_id_photo.php",
+					   data: info,
+					   success: function(output){
+					   if( output == 'TRUE' )
+					   {
+					   	if( add_post_ == 0 )
+					   	{
+					   		$('#button_add').attr({'disabled' : 'true'}).css({'opacity':'0.5','cursor':'default'});
+					   	}
+					   	
+					   	$('#photoId').val('');
+					   	element.fadeOut('fast',function(){
+				   		  element.remove();
+				   		});//<-- FUNCTION
+					   }
+					   
+					 }
+									
+				});//<-- AJAX
+			});//<--- CLICK
+	   
+		//===== static post
+		$(document).on('click', ".staticPost", function(){ 
+					//=== PARAM
+					var element     = $(this);
+					var id          = element.attr("data");
+					var action		= element.attr("data-action");
+					var info        = 'id=' + id + '&action=' + action;
+								   		
+					$.ajax({
+					   type: "POST",
+					   url: "<?php echo URL_BASE; ?>public/ajax/static_post.php",
+					   data: info,
+					   success: function(output){
+					   if( output == 'SET' )
+					   {
+					   		element.attr("data-action","remove");
+						   	element.html('<span class="fa fa-thumb-tack myicon-right"></span><?=$_SESSION['LANG']['remove_static_post']?>');
+						    
+					   }else if( output == 'REMOVED')
+					   {
+						   element.attr("data-action","set");
+						   element.html('<span class="fa fa-thumb-tack myicon-right"></span><?=$_SESSION['LANG']['static_post']?>');
+						   $('#staticpost_'+id).fadeOut('fast');
+						   
+					   }
+					   
+					 }
+									
+				});//<-- AJAX
+			});//<--- CLICK
+
+   $('.emoticons-ui').click(function(){
+
+		var smiley = $(this).attr('title');
+		$('#add_post').val($('#add_post').focus().val()+" "+smiley+" ");
+		$('#button_add').removeAttr('disabled').css({'opacity':'1','cursor':'pointer'});
+   
+   });
+   
+   <? if(!$auto_post_text and !preg_match('/24h_timeline_tab/',$_SERVER['HTTP_USER_AGENT'])){ ?>
+   if(document.body.scrollWidth<420 && document.body.scrollHeight>500){
+		window.scrollTo(0,200); //hide textarea
+   }
+   <? }else{ ?>
+   $('#button_add').removeAttr('disabled').css('opacity','1');
+   <? } ?>
+
+});//<-------- * Document Ready * ------>
+
+
+/*
+$('.emoticons-ui').each(function(){
+	$(this).popover({
+		html: true,
+		trigger: 'hover',
+		content: function(){
+			return '<img';
+		}
+	});
+});
+*/
+	   
+//Header Hide when scroll
+var menuHeight = $("#menu-wrap").height();
+var startPos = 0;
+$(window).scroll(function(){
+  var currentPos = $(this).scrollTop();
+  if (currentPos > startPos) {
+    if($(window).scrollTop() >= 201) {
+      $("#menu-wrap").css("top", "-" + ($(window).scrollTop() - 200) + "px");
+//		$("menu-wrap").fadeOut();
+	}
+  } else {
+    $("#menu-wrap").css("top", 0 + "px");
+//	  $("menu-wrap").fadeIn();
+  }
+  startPos = currentPos;
+});
+	  
+
+
+
+  </script>
+  
+  
+  
+<?php  
+//Conversion Tags
+	if($_GET['act']=='newuser'){
+		?>
+
+
+	   
+	   <?
+	}
+?>
+
+<? include('views/inc/footer.php'); ?>
+	</body>
+</html>
+  <?php
+
+
+else:
+	
+	session_destroy();
+    
+	endif; ?>
+   

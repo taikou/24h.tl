@@ -1,0 +1,83 @@
+<?php
+if(isset($_GET['cid'])){
+	$_SESSION['afili_cid']=$_GET['cid'];
+}elseif(isset($_GET['firstapplaunch'])){
+	if(preg_match('/24h_timeline/',$_SERVER['HTTP_USER_AGENT'])){
+		$url='https://24h.tl/';
+	}elseif(preg_match('/(iPhone|iPad)/',$_SERVER['HTTP_USER_AGENT'])){
+		$url='tl24h.https://24h.tl/?cid='.$_SESSION['afili_cid'];
+	}else{
+		$url='intent://24h.tl/?cid='.$_SESSION['afili_cid'].'#Intent;scheme=https;package=com.decoo.tl24h;end';
+	}
+	error_log('firstapplaunch! '.$url);
+	?>
+	<script type="text/javascript">
+		window.onload = function(){
+			location.href="<?=$url?>";
+		}
+	</script>
+	<a style="font-size: x-large;" href="<?=$url?>">アプリに戻る</a>
+		<?
+	exit;
+}
+if(isset($_GET['app'])){
+	if(preg_match('/android/i',$_SERVER['HTTP_USER_AGENT'])){
+		$url='https://play.google.com/store/apps/details?id=com.decoo.tl24h';
+	}else{
+		$url='https://itunes.apple.com/us/app/24h-timeline/id1392021806';
+	}
+	header('Location: '.$url);
+	exit;
+}
+
+
+//アプリ自動再ログイン
+/*
+if (isset($_SERVER["HTTP_CF_CONNECTING_IP"])) {
+  $_SERVER['REMOTE_ADDR'] = $_SERVER["HTTP_CF_CONNECTING_IP"];
+}
+//if($_SERVER['REMOTE_ADDR']=='103.22.200.224xx'){
+if($_SERVER['REMOTE_ADDR']=='114.179.83.214'){
+	print '<h1>cookie:'.nl2br(print_r($_COOKIE,1)).'</h1>';
+	//exit;
+}
+*/
+
+if(preg_match('/24h_timeline/',$_SERVER['HTTP_USER_AGENT'])){
+	if(!$_SESSION['authenticated'] and $_COOKIE['24h_app_autosessid']){
+		$this->db       = SPDO::singleton();
+		$sql="SELECT * FROM users WHERE last_sessid='".mysql_escape_string($_COOKIE['24h_app_autosessid'])."' and status='active' LIMIT 1";
+		$res=$this->db->query($sql)->fetch();
+//		error_log($sql);
+		if($res['id'] and $res['status']=='active'){
+			$_SESSION['username']      = $res['username'];
+			$_SESSION['authenticated'] = $res['id'];
+			$_SESSION['lang_user']     = $res['language'];
+			header('Location: /'.$_SERVER['QUERY_STRING']);
+			exit;
+		}
+	}
+}
+
+
+	//authenticated
+	if( $_SESSION['authenticated']  ) :
+
+		include('index_session.phtml');
+	 ?>
+	 	
+<?php
+	   else :
+		   if(!preg_match('/24h.tl/',$_SERVER['HTTP_REFERER']) and !$_GET['validate'] and Session::get( 'last_regnav_open' )<(time()-1800)){
+		   		$jump_discover = <<< EOS
+
+	location.href='/discover/';
+
+EOS;
+				//header('Location: /discover/');
+				//exit;
+		   }
+		   include('index_session_null.phtml');
+?>
+<?php endif; ?>
+   

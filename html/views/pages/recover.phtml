@@ -1,0 +1,100 @@
+<?php 	
+if( Session::get( 'authenticated' ) ) :
+	
+	header( 'location: '.URL_BASE );
+	exit;
+	
+endif;
+?>
+<?php include 'views/inc/header.php'; ?>
+<style>
+ body{
+		
+		background-color: #F8F8F8;
+
+	}
+	
+</style>
+</head>
+	<!-- Body -->
+	<body data-max="<?php echo MAX_LENGTH; ?>">
+		
+	<?php include 'views/inc/navigation.php'; ?>
+	
+	<div class="container container-auth">
+		<div class="row">
+			<div class="col-md-12">
+				
+				<div class="popout"></div>
+				
+				<?php if( !Session::get( 'authenticated' ) ): ?>
+					<?php if( $this->codeValid == 1 ): ?>
+				
+				<div class="panel panel-default">
+					<div class="panel-heading">
+						<?php echo $_SESSION['LANG']['choose_new_pass'] ?>
+					</div>
+					
+					<div class="panel-body">
+						
+						<form class="form-horizontal" action="" id="updatePass" role="form">
+						  <div class="form-group">
+						    <label for="pass_1" class="col-sm-2 control-label"><?php echo $_SESSION['LANG']['new_pass'] ?></label>
+						    <div class="col-sm-10">
+						      <input type="password" class="form-control" name="pass_1" id="pass_1" placeholder="<?php echo $_SESSION['LANG']['new_pass'] ?>">
+						    </div>
+						  </div>
+						  <div class="form-group">
+						    <label for="pass_2" class="col-sm-2 control-label"><?php echo $_SESSION['LANG']['verify_pass'] ?></label>
+						    <div class="col-sm-10">
+						      <input type="password" name="pass_2" id="pass_2" class="form-control" placeholder="<?php echo $_SESSION['LANG']['verify_pass'] ?>">
+						    </div>
+						  </div>
+						
+						  <div class="form-group">
+						    <div class="col-sm-offset-2 col-sm-10">
+						    	<input type="hidden" name="idhash" value="<?php echo $_GET['c'] ?>" />
+						      <button type="submit" id="buttonUpdatePass" class="btn btn-info"><?php echo $_SESSION['LANG']['send']; ?></button>
+						    </div>
+						  </div>
+						</form>
+					</div><!-- panel-body -->
+				</div><!-- panel -->
+				
+				<?php 
+					else: 
+						?>
+						<div class="alert alert-danger text-center"><strong><?php echo $_SESSION['LANG']['code_not_valid'] ?></strong></div>
+	                <?php
+			   			endif;//<<<-- Code Valid ?>
+			   			
+			   			<?php endif; //<<<-- Session Active ?>
+				
+				<div class="panel panel-default">
+					  <div class="panel-body text-center">
+					    &copy; <?php echo date('Y')." ".SITE_NAME; ?>
+					  </div>
+					</div>
+				
+			</div><!-- col -->
+		</div><!-- row -->
+	</div><!-- container -->
+
+	   
+   <script src="<?php echo $_layoutParams['root_js']; ?>jquery.min.js"></script>
+   <script src="<?php echo $_layoutParams['root_js']; ?>jquery.easing.1.3.js"></script>
+   <script src="<?php echo $_layoutParams['root_js']; ?>jquery-ui-1.10.3.custom.min.js"></script>
+   <script src="<?php echo $_layoutParams['root_js']; ?>jquery.ui.touch-punch.min.js"></script>
+   <script src="<?php echo $_layoutParams['root_js']; ?>bootstrap.min.js"></script>
+   <script src="<?php echo $_layoutParams['root_js']; ?>bootstrap-switch.js"></script>
+   <script src="<?php echo $_layoutParams['root_js']; ?>flatui-checkbox.js"></script>
+   <script src="<?php echo $_layoutParams['root_js']; ?>functions.js"></script>
+   <script src="<?php echo $_layoutParams['root_js']; ?>count.js"></script>
+   
+   <?php if( !Session::get( 'authenticated' ) ) : ?>
+   <script src="<?php echo $_layoutParams['root_js']; ?>login.sign.up.js"></script>
+   <?php endif; ?>
+ 	
+
+	</body>
+</html>

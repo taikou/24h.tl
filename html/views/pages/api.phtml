@@ -1,0 +1,251 @@
+<?php 
+include 'views/inc/header.php'; 
+ if( Session::get( 'authenticated' ) ) : ?>
+<style>
+	
+	body
+	{
+		background-position: <?php echo $this->infoSession->bg_position; ?> 55px;
+		background-attachment: <?php echo $this->infoSession->bg_attachment; ?>;
+		
+		<?php if( $this->infoSession->bg_attachment == 'fixed' ): ?>
+		background-repeat: repeat repeat; 
+		<?php else: ?>
+		background-repeat: no-repeat; 
+		<?php endif; ?>
+		
+		background-color: <?php echo $this->infoSession->bg_color; ?>;
+		
+		<?php if( $this->infoSession->bg != '' ): ?>
+		background-image: url(<?php echo URL_BASE.'public/backgrounds/'.$this->infoSession->bg; ?>);
+		<?php endif; ?>
+	}
+	
+	body a,
+	body a:hover { color: <?php echo $this->infoSession->color_link; ?>; }
+	
+	.icons { background-color: <?php echo $this->infoSession->color_link; ?>;}
+
+</style>
+<?php endif;//<<<---------- * Session Active * -------->>>> ?>
+
+</head>
+<!-- Body -->
+	<body>
+		
+		<?php include 'views/inc/navigation.php'; ?>
+		
+				   <!-- container -->  
+    <div class="container container-auth">
+    	
+    	<!-- row -->  
+    	<div class="row col-pb">
+     
+
+ 			
+ 			<div class="col-md-8">
+				
+				<div class="panel panel-default">
+				  <div class="panel-heading grid-panel-title">
+				    <h3 class="panel-title"><?php if( isset( $this->title ) ): echo stripslashes( $this->title ); endif; ?></h3>
+				  </div>
+				  <div class="panel-body">
+				   <strong>API</strong> for developers
+					
+					<h1 class="title_api">Post Link</h1>
+					<em>Example</em>
+					
+					<div class="col-pre">
+						<pre>&lt;a href="<?php echo URL_BASE; ?>api/?post=<strong>POST_TEXT</strong>"&gt;Share in 24h.timeline&lt;/a&gt;</pre>
+					</div>
+					
+					<em>Description</em>
+					<div class="col-pre">
+						<pre><strong>POST_TEXT</strong> is require to be <strong>URLENCODED</strong> and less than 140 characters.</pre>
+					</div>
+
+					
+			<? /*							
+					<h1 class="title_api">Get user data</h1>
+					<em>Example</em>
+					
+					<div class="col-pre">
+						<pre>$ curl <?php echo URL_BASE; ?>api/?user=<strong>USERNAME</strong></pre>
+					</div>
+					
+					<em>Description</em>
+					<div class="col-pre">
+						<pre><strong>user</strong> return the data specify the <strong>USERNAME</strong> via <strong>GET</strong></pre>
+					</div>
+					
+					<em>Data Return</em>
+					
+					<div class="col-pre">
+						<pre>{
+							"<strong>totalFollowers</strong>":"2",
+							"<strong>totalFollowing</strong>":"24",
+							"<strong>totalFavs</strong>":"11",
+							"<strong>totalPost</strong>":"29",
+							"<strong>id</strong>":"1",
+							"<strong>username</strong>":"MiguelVasquez",
+							"<strong>name</strong>":"Miguel Vasquez",
+							"<strong>location</strong>":"Aragua",
+							"<strong>country</strong>":"ve",
+							"<strong>website</strong>":"https://twitter.com/MiguelVasquez08",
+							"<strong>bio</strong>":"#WebDesign #Developer",
+							"<strong>avatar</strong>":"<?php echo URL_BASE; ?>public/avatar/miguelvasquez_19zy00.png",
+							"<strong>avatar_large</strong>":"<?php echo URL_BASE; ?>public/avatar/large_miguelvasquez_19zy00.png",
+							"<strong>verified</strong>":"0",
+							"<strong>cover_image</strong>":"<?php echo URL_BASE; ?>cover/cover_miguelvasquez_1j07gs.jpg",
+							"<strong>cover_large</strong>":"<?php echo URL_BASE; ?>cover/large_cover_miguelvasquez_1j07gs.jpg"
+							}</pre>
+					</div>
+				
+				<h1 class="title_api">Get last <?php echo $this->totalPostDisplay; ?> posts from an user</h1>
+				<em>Example</em>
+					
+					<div class="col-pre">
+						<pre>$ curl <?php echo URL_BASE; ?>api/?user=<strong>USERNAME</strong>&amp;post=true</pre>
+					</div>
+					
+					<em>Data Return</em>
+					<div class="col-pre">
+						<pre>{
+							"<strong>posts</strong>":
+							[{
+								"<strong>id</strong>":"1",
+								"<strong>token_id</strong>":"a8e015ec6de45c88ba0412bc9f6e2feb272b042e",
+								"<strong>post_details</strong>": "Hello world",
+								"<strong>photo</strong>": "<?php echo URL_BASE; ?>public/upload/3j8ivw84ibn.jpeg",
+								"<strong>video_code</strong>": "W7NZILqGgdI",
+								"<strong>video_title</strong>": "Key Player For Game 5",
+								"<strong>video_site</strong>": "youtube",
+								"<strong>video_url</strong>": "http://youtu.be/GNZBSZD16cY",
+								"<strong>user</strong>": "1",
+								"<strong>status</strong>": "1",
+								"<strong>video_thumbnail</strong>": "http://img.youtube.com/vi/W7NZILqGgdI/1.jpg",
+								"<strong>date</strong>": "2013-06-14 13:31:04",
+								"<strong>status_general</strong>": "1",
+								"<strong>url_soundcloud</strong>": "",
+								"<strong>title_soundcloud</strong>": "",
+								"<strong>thumbnail_song</strong>": "",
+							},
+							{
+								"<strong>id</strong>":"1",
+								"<strong>token_id</strong>":"24ef025e5dfc71217397662c47a8d3be981084fb",
+								"<strong>post_details</strong>": "Hello world",
+								"<strong>photo</strong>": "<?php echo URL_BASE; ?>public/upload/3j8ivw84ibn.jpeg",
+								"<strong>video_code</strong>": "W7NZILqGgdI",
+								"<strong>video_title</strong>": "Key Player For Game 5",
+								"<strong>video_site</strong>": "youtube",
+								"<strong>video_url</strong>": "http://youtu.be/GNZBSZD16cY",
+								"<strong>user</strong>": "1",
+								"<strong>status</strong>": "1",
+								"<strong>video_thumbnail</strong>": "http://img.youtube.com/vi/W7NZILqGgdI/1.jpg",
+								"<strong>date</strong>": "2013-06-14 13:31:04",
+								"<strong>status_general</strong>": "1",
+								"<strong>url_soundcloud</strong>": "",
+								"<strong>title_soundcloud</strong>": "",
+								"<strong>thumbnail_song</strong>": "",
+							}
+							]}</pre>
+					</div>*/ ?>
+				  </div>
+				</div>
+				
+ 			</div><!--/col-md-* -->
+    	
+    	
+   		     <!-- col-md-* -->  
+		     <div class="col-md-4">
+		     	
+			<div class="popout"></div>
+		
+		 <button type="button" class="btn btn-info btn-block btn-border btn-lg show-toogle" data-toggle="collapse" data-target=".navleft-collapse">
+		   <i class="fa fa-bars"></i>
+		</button>
+		
+		<div class="collapsexxx navleft-collapse">
+			
+		 <?php 
+			   $totalPag = count( $this->pagesGeneral );
+			   
+			   if( $totalPag != 0 ) :
+			    ?>
+			
+		<div class="list-group">
+			
+     	   <!-- **** list-group-item **** -->	
+		  <a href="<?php echo URL_BASE.'api/'; ?>" class="list-group-item <?php if( $_GET['page'] == 'api'  ) { echo 'active'; } ?>"> 
+		  	API
+			  	<span class="pull-right">
+			  		<i class="fa fa-chevron-right "></i>
+			  	</span>
+		  	</a> <!-- **** ./ list-group-item **** -->	
+		  	
+		  	<?php foreach( $this->pagesGeneral as $key ) : ?>
+		  		
+		  	<!-- **** list-group-item **** -->	
+		  <a href="<?php echo URL_BASE.$key['url'].'/'; ?>" class="list-group-item <?php if( $_GET['page'] == $key['url']  ) { echo 'active'; } ?>"> 
+		  	<?php echo stripslashes( $key['title'] ); ?>
+			  	<span class="pull-right">
+			  		<i class="fa fa-chevron-right "></i>
+			  	</span>
+		  	</a> <!-- **** ./ list-group-item **** -->	
+		  	
+		  	<?php endforeach; ?>
+		  	
+		</div><!-- * list-group * -->
+				   
+				<?php endif; ?>  
+
+				   <?php 
+				   //<---- * advertising * --->
+				   include 'views/inc/advertising.php';
+				   ?>
+				   
+				   <?php
+				   if( Session::get( 'authenticated' ) ) :
+				   //<---- * who_follow * --->
+				   include 'views/inc/who_to_follow.php';
+				   
+				   endif;
+				   //<---- * trending * --->
+				   include 'views/inc/trending.php'; 
+				   
+				   include 'views/inc/footer_session.php'; 
+				   
+				   ?>
+</div><!-- collapse -->
+ 			</div><!--/col-md-* -->
+ 			 	
+    	
+    	
+    	
+  </div><!--************ Row ********************-->
+  
+  </div><!--******************** Container ******************-->
+
+
+
+
+	
+   <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="<?php echo $_layoutParams['root_js']; ?>jquery.min.js"></script>
+    <script src="<?php echo $_layoutParams['root_js']; ?>jquery-ui-1.10.3.custom.min.js"></script>
+    <script src="<?php echo $_layoutParams['root_js']; ?>jquery.ui.touch-punch.min.js"></script>
+    <script src="<?php echo $_layoutParams['root_js']; ?>bootstrap.min.js"></script>
+    <script src="<?php echo $_layoutParams['root_js']; ?>bootstrap-switch.js"></script>
+    <script src="<?php echo $_layoutParams['root_js']; ?>flatui-checkbox.js"></script>
+    <script src="<?php echo $_layoutParams['root_js']; ?>functions.js"></script>
+    <script src="<?php echo $_layoutParams['root_js']; ?>functions-user.js"></script>
+   
+   
+   <?php if( !Session::get( 'authenticated' ) ) : ?>
+   <script src="<?php echo $_layoutParams['root_js']; ?>login.sign.up.js"></script>
+   <?php endif; ?>
+
+	</body>
+</html>

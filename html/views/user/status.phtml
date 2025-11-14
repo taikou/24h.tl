@@ -1,0 +1,617 @@
+<?php 
+//<--- * User * ---> 
+$count = count( $this->data );
+$idPost = $this->data->id;
+//<--- * Favs * --->
+$countFavs = count( $this->favorites );
+	switch($this->data->fa_status){
+		case 1:
+			$classReaction='dw_reaction_like'; $textFav='Like'; break;
+		case 2:
+			$classReaction='dw_reaction_love'; $textFav='Love'; break;
+		case 3:
+			$classReaction='dw_reaction_haha'; $textFav='Haha'; break;
+		case 4:
+			$classReaction='dw_reaction_wow'; $textFav='WoW'; break;
+		case 5:
+			$classReaction='dw_reaction_sad'; $textFav='Sad'; break;
+		case 6:
+			$classReaction='dw_reaction_angry'; $textFav='Angry'; break;
+		default:
+			$classReaction='';$textFav='Like'; break;
+	}
+if( isset( $this->data->id ) && $this->checkBlocked[0]['status'] != 1 ) :
+
+//============ FAVORITES
+	if( $this->data->favoriteUser == 1 ) {
+		$classFav     = 'favorited';
+		$spanFav      = ' title="'.$_SESSION['LANG']['trash'].' '.$_SESSION['LANG']['favorite'].'"';
+		$textFav      = $_SESSION['LANG']['favorited'];
+		$spanAbsolute = '<span class="add_fav"></span>';
+	} else {
+		$classFav     = null;
+		$spanFav      = null;
+		$spanAbsolute = null;
+		$textFav      = $_SESSION['LANG']['favorite'];
+	}
+	
+	
+				
+	//============ REPOST SESSION CURRENT
+	if(  $this->activeRepost == 1  ) {
+		$spanRepost   = ' repostedSpan';
+		$textRepost   = $_SESSION['LANG']['reposted'];
+	} else  {
+		$iconRepost   = null;
+		$spanRepost   = null;
+		$textRepost   = $_SESSION['LANG']['repost'];
+	}
+					
+	$widthPhoto = _Function::getWidth( URL_BASE.'upload/'.$this->data->photo ); 
+				
+	if( $widthPhoto >= 500 ) {
+		$thumbPic = 'thumb/500-500-';
+	} else {
+		$thumbPic = null;
+	}
+	
+	if( $this->data->mode == 0 
+		&& $this->followingActive->status == 0 
+		&& $_SESSION['authenticated'] 
+		!= $this->data->user_id
+		&& !isset( $_SESSION['id_admon'] )
+	):
+	
+	header('location: '.URL_BASE.$this->data->username );
+	//exit;
+	else:
+	
+?>
+<?php include 'views/inc/header.php'; ?>
+<link rel="canonical" href="<?php echo URL_BASE.$this->data->username.'/status/'.$this->data->id ?>">
+<?php if( $this->data->photo != '' ) : ?>
+<meta  property="og:image" content="<?php echo URL_BASE.'thumb_fixed/150-150-upload/'.$this->data->photo; ?>" ></meta>
+<?php endif; ?>
+<link href="<?php echo $_layoutParams['root_css']; ?>jquery-ui-1.8.2.custom.css" rel="stylesheet" />
+<style>
+	
+	body
+	{
+		background-position: <?php echo $this->data->bg_position; ?> 55px;
+		background-attachment: <?php echo $this->data->bg_attachment; ?>;
+		
+		<?php if( $this->data->bg_attachment == 'fixed' ): ?>
+		background-repeat: repeat repeat; 
+		<?php else: ?>
+		background-repeat: no-repeat; 
+		<?php endif; ?>
+		
+		background-color: <?php echo $this->data->bg_color; ?>;
+		
+		<?php if( $this->data->bg != '' ): ?>
+		background-image: url(<?php echo URL_BASE.'public/backgrounds/'.$this->data->bg; ?>);
+		<?php endif; ?>
+	}
+	<?php include('views/inc/ios_background.php'); ?>
+	
+	body a,
+	body a:hover { color: <?php echo $this->data->color_link; ?>; }
+	.icons { background-color: <?php echo $this->data->color_link; ?>;}
+	.container_data_profile a:hover span{ color: <?php echo $this->data->color_link; ?>;  }
+	
+</style>
+<link href="<?php echo $_layoutParams['root_css']; ?>colorbox.css" rel="stylesheet" />
+<?php /*
+<script type="text/javascript">var switchTo5x=true;</script>
+<script type="text/javascript" src="https://ws.sharethis.com/button/buttons.js"></script>
+<script type="text/javascript">stLight.options({publisher: "832581e6-ef90-47da-9cc8-201b56caee73", doNotHash: false, doNotCopy: false, hashAddressBar: false});</script>
+*/ ?>
+</head>
+	<!-- Body -->
+	<body data-max="<?php echo MAX_LENGTH; ?>" data-accept="<?php echo $_SESSION['LANG']['accept']; ?>" data-cancel="<?php echo $_SESSION['LANG']['cancel']; ?>">
+		
+					<?php include 'views/inc/navigation.php'; ?>
+			   
+			   <!-- container -->  
+    <div class="container container-auth">
+    <!-- row -->  
+    <div class="row col-pb">
+      <!-- col-md -->  
+      <div class="col-md-8">
+      	<div class="popout"></div>
+      	
+      	<div class="panel panel-default" style="position: relative;">
+      		<?php echo $spanAbsolute; ?>
+		  <div class="panel-heading timeline-title">
+		  	
+		  	<div class="pull-left col-avatar">
+		  		<a href="<?php echo URL_BASE.$this->data->username; ?>">
+		  			<img src="<?php echo URL_BASE.'thumb/90-90-public/avatar/'.$this->data->avatar; ?>" alt="Avatar" class="media-object img-rounded" width="45">
+		  			</a>
+		  	</div>
+		  	
+		  	<div class="pull-right pos-relative">
+		  		<?php	if( isset( $_SESSION['authenticated'] ) ): 
+		    			
+						if( $_SESSION['authenticated'] != $this->data->user_id && $this->checkBlock[0]['status'] == 0  ):
+							?>
+							
+							<?php if ( $this->followingActive->status == 1 ): ?>	
+		    		   		 <button data-username="<?php echo $this->data->username; ?>" 
+		    		   		 	data-id="<?php echo _Function::randomString( 10, FALSE, TRUE, FALSE ).'-'.$this->data->user_id; ?>" 
+		    		   		 	data-follow="<?php echo $_SESSION['LANG']['follow']; ?>" 
+		    					data-unfollow="<?php echo $_SESSION['LANG']['unfollow']; ?>" 
+		    					data-following="<?php echo $_SESSION['LANG']['following']; ?>"
+		    					class="btn btn-border btn-sm btn-info follow_active followBtn">
+		    		   		 	<i class="icon-user3 myicon-right"></i> <?php echo $_SESSION['LANG']['following']; ?>
+		    		   		 	</button>
+		    				<?php else: ?>
+		    				<button data-username="<?php echo $this->data->username; ?>" 
+		    					data-id="<?php echo _Function::randomString( 10, FALSE, TRUE, FALSE ).'-'.$this->data->user_id; ?>" 
+		    					data-follow="<?php echo $_SESSION['LANG']['follow']; ?>" 
+		    					data-unfollow="<?php echo $_SESSION['LANG']['unfollow']; ?>" 
+		    					data-following="<?php echo $_SESSION['LANG']['following']; ?>"
+		    					class="btn btn-border btn-sm btn-default followBtn">
+		    					<i class="icon-user3 myicon-right"></i> <?php echo $_SESSION['LANG']['follow']; ?>
+		    					</button>
+		    					
+							<?php endif; //<--- $this->followingActive->status ?>
+						<?php endif; //<---  $_SESSION['authenticated'] != $this->info->id ?>
+		    		
+		    		<?php else: ?>
+		    			
+		    		<button class="btn btn-border btn-sm btn-default">
+		    			<i class="icon-user3 myicon-right"></i> <?php echo $_SESSION['LANG']['follow']; ?>
+		    			</button>
+		    		
+		    		<?php endif; //<---- $_SESSION['authenticated'] ?>
+		  		
+		  	</div>
+		  	
+		  	<div class="text-user-timeline">
+		  		<strong><a href="<?php echo URL_BASE.$this->data->username; ?>" class="username-posts"><?php echo stripslashes( $this->data->name ); ?></a></strong> 
+		  		
+		  		<?php if( $this->data->type_account == '1' ): ?>
+		  		<i class="fa fa-check-circle verified verified-min showTooltip" data-toggle="tooltip" data-placement="right" title="<?php echo $_SESSION['LANG']['verified']; ?>"></i> 
+		  		<?php endif; ?>
+		  	</div>
+		  	
+		  	<?php if( $this->data->geolocation != '' ) : ?>
+					  	<div class="container-geo">
+					  		<i class="fa fa-map-marker ico-geo myicon-right"></i> 
+					  		
+					  		<a class="text-geo" target="_blank" href="https://www.google.com/maps/place/<?php echo $this->data->geolocation; ?>">
+					  			<?php echo $this->data->geolocation; ?>
+					  			</a>
+					  	</div>
+					 <?php endif; ?>
+		  	
+		  	<div class="small sm-font sm-date">@<?php echo $this->data->username; ?></div>
+		  	
+		  </div><!-- panel-heading -->
+		  	
+		  <div class="panel-body">
+		  	
+		  	<?php if(  $this->data->post_details != '' || $this->data->video_code != '' ) : ?>
+		  	<p class="p-text">
+		  	<?php echo _Function::checkText( $this->data->post_details );  ?> 
+		  	</p>
+		  	<?php endif; ?>
+		  	
+		  	<?php if( $this->data->video_site != '' 
+				  	|| $this->data->photo != '' 
+				  	|| $this->data->url_soundcloud != '' 
+				  	|| $this->data->doc_url != ''
+			): ?>
+		  		
+		  		<?php if( $this->data->video_site == 'youtube' ): ?>
+		  			<div class="embed-responsive embed-responsive-4by3">
+   						<iframe height="400" src="https://www.youtube.com/embed/<?php echo $this->data->video_code; ?>" allowfullscreen></iframe>
+   					</div>
+   					<?php endif; ?>
+   					
+   					<?php if( $this->data->video_site == 'vimeo' ): ?>
+   						<div class="embed-responsive embed-responsive-4by3">
+   							<iframe src="https://player.vimeo.com/video/<?php echo $this->data->video_code; ?>" height="400" webkitAllowFullScreen mozallowfullscreen allowFullScreen></iframe>
+   						</div>
+   					<?php endif; ?>
+   					
+   					<?php if( $this->data->video_site == 'dailymotion' ): ?>
+   					<div class="embed-responsive embed-responsive-4by3">
+   						<iframe class="embed-responsive-item" height="360" scrolling="no" src="<?php echo $this->data->video_url; ?>"></iframe>
+   					</div>
+   					<?php endif; ?>
+   					
+   					<?php if( $this->data->video_site == 'screenr' ): ?>
+   					<div class="embed-responsive embed-responsive-4by3">
+   						<iframe class="embed-responsive-item" height="360" scrolling="no" src="<?php echo $this->data->video_url; ?>"></iframe>
+   					</div>
+   					<?php endif; ?>
+   					
+   					<?php if( $this->data->video_site == 'dotsub' ): ?>
+   					<div class="embed-responsive embed-responsive-4by3">
+   						<iframe class="embed-responsive-item" height="360" scrolling="no" src="<?php echo $this->data->video_url; ?>"></iframe>
+   					</div>
+   					<?php endif; ?>
+   					
+   					<?php if( $this->data->video_site == 'hulu' ): ?>
+   					<div class="embed-responsive embed-responsive-4by3">
+   						<iframe class="embed-responsive-item" height="360" scrolling="no" src="<?php echo $this->data->video_url; ?>"></iframe>
+   					</div>
+   					<?php endif; ?>
+   					
+   					<?php if( $this->data->video_site == 'blip' ): ?>
+   					<div class="embed-responsive embed-responsive-4by3">
+   						<iframe class="embed-responsive-item" height="360" scrolling="no" src="<?php echo $this->data->video_url; ?>"></iframe>
+   					</div>
+   					<?php endif; ?>
+   					
+   					<?php if( $this->data->doc_site == 'slideshare' ): ?>
+   					<div class="embed-responsive embed-responsive-4by3">
+   						<iframe class="embed-responsive-item" height="360" scrolling="no" src="<?php echo preg_replace('#^https?:#', '', rtrim($this->data->doc_url,'/')); ?>"></iframe>
+   					</div>
+   					<?php endif; ?>
+   					
+   					<?php if( $this->data->photo != '' ): ?>
+   					<a data-url="" class="link-img smartphoto" href='<?php echo URL_BASE ?>upload/<?php echo $this->data->photo; ?>'> 
+   						<img class='photoPostxx img-responsive' src='<?php echo URL_BASE.$thumbPic ?>upload/<?php echo $this->data->photo; ?>'> 
+   						</a>
+   					
+   					<?php endif; ?>
+   					
+   				
+   					<?php if( $this->data->url_soundcloud != '' ): ?>
+   						
+   					<iframe class="embed-responsive-item" height="120" scrolling="no" src="https://w.soundcloud.com/player/?url=<?php echo $this->data->url_soundcloud; ?>"></iframe>
+   					<?php endif; ?>
+   					
+		  	<?php endif; ?>	
+		  	
+		  	<?php if( $this->data->url_host != '' ) : ?>
+		  		
+		  		<div class="row list-media-mv margin-zero">
+				  	<div class="col-sm-12 padding-zero">
+				  		
+					<!-- ******** Media ****** -->  
+		    	  	<a href="<?php echo $this->data->url; ?>" style="border-bottom: 2px solid #0088E2 !important;" target="_blank" class="media li-group list-group-ms links-sm">
+		                   
+		                   <?php if( $this->data->url_thumbnail != '' ) { ?>
+		                    <div class="pull-left margin-zero thumb-url-load">
+		                       	<img src="<?php echo URL_BASE.'image_url.php?url='.base64_encode( $this->data->url_thumbnail ); ?>" onerror="$(this).hide();" alt="Image" class="media-object thumbnail_url img-responsive">
+		                    </div>
+		                    <?php } ?>
+		                    
+		                    <div class="media-body clearfix text-overflow padding-tp padding-left-group">
+		                       <strong class="media-heading">
+		                       	<?php if( $this->data->url_title != '') { ?>
+		                       		<?php echo $this->data->url_title; 
+		                       		} else {
+		                       			echo 'Untitled';
+		                       		} ?>
+		                       	</strong>
+		                       <p class="text-col">
+		                       	  	<?php if( $this->data->url_description != '') { ?>
+		                       	  <span class="block-sm color-font text-overflow"><?php echo $this->data->url_description; ?></span>
+		                           <?php } ?>
+		                          <small class="color-font-link text-uppercase text-link"><?php echo $this->data->url_host; ?></small>
+		                    </p></div><!-- media-body -->
+		        	 </a><!-- ******** Media ****** -->
+				</div><!-- col-sm-6 -->
+			</div>
+		  		<?php endif; ?>	
+<?php /*		  	
+		  	<ul class="list-inline margin-bottom-zero list-options">
+					<li class='st_facebook' displayText='Facebook'></li>
+					<li class='st_twitter' displayText='Tweet'></li>
+					<li class='st_googleplus' displayText='Google +'></li>
+		  	</ul>
+*/ ?>
+
+  			  	
+  			  		  	
+  			  		  		  	
+  		<!-- reactions -->
+			<?php if( isset( $_SESSION['authenticated'] ) ): 
+				$FavsByType=$this->FavsByTypes;
+
+			?>												
+<div>
+	<div class="dw-reactions-count">
+	<? if($FavsByType[1]>0){ ?><span class="dw-reaction-count dw-reaction-count-like"><strong><?=$FavsByType[1]?></strong></span><? } ?>
+	<? if($FavsByType[2]>0){ ?><span class="dw-reaction-count dw-reaction-count-love"><strong><?=$FavsByType[2]?></strong></span><? } ?>
+	<? if($FavsByType[3]>0){ ?><span class="dw-reaction-count dw-reaction-count-haha"><strong><?=$FavsByType[3]?></strong></span><? } ?>
+	<? if($FavsByType[4]>0){ ?><span class="dw-reaction-count dw-reaction-count-wow"><strong><?=$FavsByType[4]?></strong></span><? } ?>
+	<? if($FavsByType[5]>0){ ?><span class="dw-reaction-count dw-reaction-count-sad"><strong><?=$FavsByType[5]?></strong></span><? } ?>
+	<? if($FavsByType[6]>0){ ?><span class="dw-reaction-count dw-reaction-count-angry"><strong><?=$FavsByType[6]?></strong></span><? } ?>
+
+	</div>
+</div>				
+		<?php endif; ?>												
+
+		<!-- list -->
+	  	<ul class="list-inline margin-bottom-zero list-options" style="margin-top: -14px;">	
+
+<li class="dw-reactions dw-reactions-post-<?=$idPost?>" data-type="<?=($classFav?'unvote':'vote')?>" data-token="<?=$this->data->token?>" data-post="<?=$idPost?>">
+	<div class="dw-reactions-button" style="user-select: none;">
+		<span class="dw-reactions-main-button  <?=$classReaction?>"><?=$textFav?></span>
+		<div class="dw-reactions-box">
+			<span class="dw-reaction dw-reaction-like"><strong>Like</strong></span>
+			<span class="dw-reaction dw-reaction-love"><strong>Love</strong></span>
+			<span class="dw-reaction dw-reaction-haha"><strong>Haha</strong></span>
+			<span class="dw-reaction dw-reaction-wow"><strong>Wow</strong></span>
+			<span class="dw-reaction dw-reaction-sad"><strong>Sad</strong></span>
+			<span class="dw-reaction dw-reaction-angry"><strong>Angry</strong></span>
+		</div>
+	</div>
+</li>		  		  		  		  	
+  			  		  		  		  		  	
+  			  	
+	  			  	
+		  	<a href="http://twitter.com/share?url=<?=URL_BASE.$this->data->username.'/status/'.$this->data->id?>&text=<?=rawurlencode($_SESSION['LANG']['share_hashtags'])?>" style="color:lightskyblue;margin-left: 20px;"><i style="font-size: 24px;" class="ion-social-twitter"></i></a>　　
+    <a href="https://www.facebook.com/sharer/sharer.php?u=<?=rawurlencode(URL_BASE.$this->data->username.'/status/'.$this->data->id)?>" style="color: #0D57CE;"><i style="font-size: 24px;" class="ion-social-facebook"></i></a>　　
+    <a href="http://line.me/R/msg/text/?<?=rawurlencode(URL_BASE.$this->data->username.'/status/'.$this->data->id.' '.$_SESSION['LANG']['share_hashtags'])?>" style="color: #0ECF19;"><i style="font-size: 24px;" class="ion-ios-chatbubble"></i></a>
+    <? if(preg_match('/24h_timeline/',$_SERVER['HTTP_USER_AGENT'])){ ?>
+    　　<a href="gonative://share/sharePage" style="color:#666;"><i style="font-size: 24px;" class="ion-share"></i></a>
+    <? } ?>
+    
+		  
+
+		  	<?php if( Session::get( 'authenticated' ) ): ?>
+		  	<!-- list -->
+		  	<ul class="list-inline margin-bottom-zero list-options">
+			  <!-- FAVORITES -->
+<? /*			  
+			<li>
+		  	<a data-fav="<?php echo $_SESSION['LANG']['favorite']; ?>" data-fav-active="<?php echo $_SESSION['LANG']['favorited']; ?>"class="favorite favoriteIcon <?php echo $classFav; ?>" <?php echo $spanFav; ?> data="<?php echo $this->data->id; ?>" data-token="<?php echo $this->data->token_id; ?>">
+		  		<span class="fa fa-thumbs-o-up myicon-right"></span> 
+		  		<?php echo $textFav; ?>
+		  		</a>
+		  	</li>
+*/ ?>
+	  		<li>		  	
+		  	<a class="favoriteIcon reply-button" style="line-height: 18px;">
+				<span style="font-size: 12px; color:#999; font-weight: bold;"><span class="fa fa-comment myicon-right"></span><?php echo $_SESSION['LANG']['reply']; ?></span>
+			</a>
+		  	</li>
+		  <?php endif; ?>
+		  
+			<!-- REPOST -->
+			<?php if( isset( $_SESSION['authenticated'] ) && $this->data->user_id !=  $_SESSION['authenticated'] ): ?>
+			<li>
+		  	<a data-fav="<?php echo $_SESSION['LANG']['repost']; ?>" data-rep-active="<?php echo $_SESSION['LANG']['reposted']; ?>"class="repost_button repostIcon <?php echo $spanRepost; ?>" data="<?php echo $this->data->id; ?>" data-token="<?php echo $this->data->token_id; ?>" style="color:#999; font-weight: bold;font-size: 13px;">
+		  		<span class="fa fa-retweet myicon-right"></span> 
+		  		<?php echo $textRepost; ?>
+		  		</a>
+		  	</li>
+		  	
+		
+			<?php endif; ?>
+			
+			<!-- TRASH -->
+			<?php if( $this->data->user_id == $_SESSION['authenticated'] ): ?>
+			
+			<li><a data-message="<?php echo $_SESSION['LANG']['delete_post']; ?>" data-confirm="<?php echo $_SESSION['LANG']['confirm']; ?>" class="trashStatus" data-image="<?php echo $key['photo']; ?>" data="<?php echo $this->data->id; ?>" data-token="<?php echo $this->data->token_id; ?>">
+		  	<span class="fa fa-trash myicon-right"></span> 
+		  	<?php echo $_SESSION['LANG']['trash']; ?>
+		  	  </a>
+		  	</li>
+		  </ul><!-- ./list -->
+			
+			<?php endif; ?>
+		    
+		  </div><!-- panel-body -->
+		  
+		  <div class="panel-footer">
+		  	
+		  	<!-- list -->
+		  	<ol class="breadcrumb li-group margin-bottom-zero padding-left-zero padding-right-zero">
+			  <li class="list-breadc"><span class="fa fa-thumbs-o-up myicon-right"></span> <?php echo $countFavs; ?></li>
+			  <li class="list-breadc"><span class="fa fa-retweet myicon-right"></span> <?php echo $this->countRepost[0]['totalRepost']; ?></li>
+			 
+			  	
+			  	<?php if( $countFavs != 0 ): ?>
+			  		
+			   <li>
+			   	
+			  	  <?php foreach ( $this->favorites as $key ) { ?>
+			  	<!-- start -->
+			  	<a class="myicon-right showTooltip openModal" data-id="<?php echo $key['id']; ?>" title="@<?php echo $key['username']?>" href="<?php echo URL_BASE.$key['username']?>" data-toggle="tooltip" data-placement="top">
+			  		<img src="<?php echo URL_BASE ?>thumb/40-40-public/avatar/<?php echo $key['avatar']?>" class="img-rounded" width="20">
+			  	</a><!-- end -->
+			  	<?php } //<--- End foreach ?>
+			  	
+			  	</li>
+			  	
+			<?php endif; ?>
+			  	
+			  
+			</ol><!-- list -->
+			
+			<!-- list -->
+		  	<ol class="breadcrumb li-group padding-left-zero padding-right-zero">
+			  <li class="list-breadc datetime" data-timestamp="<?php echo date('Y-m-d\TH:i:s', strtotime( $this->data->_date ) ) ?>.000Z"><?php echo date('Y/m/d', strtotime( $this->data->_date ) ) ?></li>
+			  
+			  <?php if(  Session::get( 'authenticated' ) && $_SESSION['authenticated'] != $this->data->user_id ): ?>
+			  <li class="list-breadc">
+			  	<a href="javascript:void(0);" class="iReport reportPost" data="<?php echo $this->data->id; ?>" data-token="<?php echo $this->data->token_id; ?>">
+			  		<i class="icon-flag myicon-right"></i> <?php echo $_SESSION['LANG']['report']; ?>
+			  		</a> 
+			  	</li>
+			  <?php endif; ?>
+			</ol><!-- list -->
+			
+
+		<div class="container-media <?php if( $this->countReply == 0 ) { echo 'margin-zero'; } ?>" id="reply-status-wrap">
+			<?php if( $this->countReply != 0 ):
+			
+					foreach ( $this->reply as $key ) {
+						//============ VERIFIED
+						if( $key['type_account'] == '1' ) {
+							$verified = ' <i class="fa fa-check-circle verified verified-min showTooltip" title="'.$_SESSION["LANG"]["verified"].'" data-toggle="tooltip" data-placement="right"></i>';
+						} else {
+							$verified = null;
+						}
+						if( $_SESSION['authenticated'] == $key['id'] ) {
+							$removeReply = '<div class="pull-right small"> <a href="javascript:void(0);" data="'.$key['idReply'].'" class="link-post showTooltip removeReply" title="'. $_SESSION['LANG']['delete'] .'" data-toggle="tooltip" data-placement="top"> <i class="glyphicon glyphicon-remove size-icon"></i> </a> </div>';
+						} else {
+							$removeReply = null;
+						}
+						?>
+		
+			<div class="media li-group reply-list">
+				  	<a class="pull-left openModal" data-id="<?php echo $key['id']; ?>" href="<?php echo URL_BASE.$key['username']; ?>">
+				    	<img class="media-object img-circle" src="<?php echo URL_BASE; ?>thumb/80-80-public/avatar/<?php echo $key['avatar']; ?>" width="40">
+				  	</a>
+				  	<div class="media-body">
+						
+							<?php echo $removeReply; ?>
+							
+						<h6 class="media-heading">
+							<a href="<?php echo URL_BASE.$key['username']; ?>" data-id="<?php echo $key['id']; ?>" class="username-posts openModal"><strong><?php echo $key['name']; ?></strong> <?php echo $verified; ?></a> <small class="username-ui">@<?php echo $key['username']; ?></small>
+							</h6>
+				    	<p class="list-grid-block p-text">
+				    		<?php echo _Function::checkText( $key['reply'] ); ?>
+				    	</p>
+				    	<span class="timestamp timeAgo small sm-font sm-date" data="<?php echo date('c', strtotime( $key['date'] ) ); ?>"></span><!-- small sm-font sm-date -->
+				  		
+				  		<?php if( isset( $_SESSION['authenticated'] ) && $_SESSION['authenticated'] != $key['id'] ): ?>
+				  		<span class="small sm-font"> -
+				  			<a href="javascript:void(0);" class="reply-user" data-user="@<?php echo $key['username']; ?>">
+				  				<?php echo $_SESSION['LANG']['reply']; ?>
+				  			</a>
+				  		</span>
+				  		
+				  		<?php endif; ?>
+				  		
+				  	</div><!-- media-body -->
+				</div><!-- media -->
+				
+				<?php } //<-- foreach
+						
+						endif; ?>
+				
+			</div><!-- container media -->
+		
+		<?php if( Session::get( 'authenticated' ) ): ?>	
+	<div class="media">
+		
+        <span class="pull-left">
+            <img alt="Avatar" src="<?php echo URL_BASE.'thumb/80-80-public/avatar/'.$this->infoSession->avatar; ?>" class="media-object img-circle" width="40">
+        </span>
+        
+        
+        <div class="media-body">
+        	<form action="" method="post" accept-charset="UTF-8" id="form_reply_post">
+			<input type="hidden" name="id_reply" id="id_reply" value="<?php echo $this->data->id; ?>">
+			<input type="hidden" name="token_reply" id="token_reply" value="<?php echo $this->data->token_id; ?>">
+        	<textarea class="form-control textarea-text" name="reply_post" id="reply_post" style="overflow: hidden; word-wrap: break-word; height: 49px;"></textarea>
+            
+            <div class="help-block">
+            	<button type="submit" disabled="disabled" style="opacity: 0.5; cursor: default;" id="button-reply-status" class="btn btn-info btn-xs btn-border">
+            		<?php echo $_SESSION['LANG']['reply'] ?>
+            	</button>
+            </div>
+            </form>
+        </div>
+  </div><!-- media -->
+  <?php endif; ?>	
+  
+			</div><!-- panel-footer -->
+		</div><!-- Panel end -->
+      	</div><!--/col-md-* -->
+      	
+      	
+      	<div class="col-md-4">
+      		<?php 
+				   //<---- * advertising * --->
+				   include 'views/inc/advertising.php';
+				   //<---- * who_follow * --->
+				   include 'views/inc/who_to_follow.php';
+				   //<---- * trending * --->
+				   include 'views/inc/trending.php'; 
+				   //<---- * Footer * --->
+				   include 'views/inc/footer_session.php';
+				   
+				 ?>
+      	</div><!--/col-md-* -->
+      	
+      	
+    </div><!-- **** row **** -->
+  </div><!-- ******************* container ************* -->
+	
+	
+   <script src="<?php echo $_layoutParams['root_js']; ?>jquery.min.js"></script>
+   <script src="<?php echo $_layoutParams['root_js']; ?>jquery.easing.1.3.js"></script>
+   <script src="<?php echo $_layoutParams['root_js']; ?>jquery-ui-1.10.3.custom.min.js"></script>
+   <script src="<?php echo $_layoutParams['root_js']; ?>jquery.ui.touch-punch.min.js"></script>
+   <script src="<?php echo $_layoutParams['root_js']; ?>bootstrap.min.js"></script>
+   <script src="<?php echo $_layoutParams['root_js']; ?>bootstrap-switch.js"></script>
+   <script src="<?php echo $_layoutParams['root_js']; ?>flatui-checkbox.js"></script>
+   <script src="<?php echo $_layoutParams['root_js']; ?>jquery.autosize.min.js"></script>
+   <script src="<?php echo $_layoutParams['root_js']; ?>functions.js?23"></script>
+   <script src="<?php echo $_layoutParams['root_js']; ?>count.js"></script>
+   <script src="<?php echo $_layoutParams['root_js']; ?>jquery.form.js"></script>
+   <script src="<?php echo $_layoutParams['root_js']; ?>timeago/jqueryTimeago_<?php echo $_SESSION['lang']; ?>.js"></script>
+   <script src="<?php echo $_layoutParams['root_js']; ?>jquery.colorbox.js"></script>
+      <script src="https://unpkg.com/smartphoto@1.1.0/js/jquery-smartphoto.min.js"></script>
+   <script src="<?php echo $_layoutParams['root_js']; ?>jquery.scroll.user.js"></script>
+   <script src="<?php echo $_layoutParams['root_js']; ?>bootbox.min.js"></script>
+   
+   <script src="/public/reactions/assets/js/script.js?18"></script>
+
+   
+   <?php if( !Session::get( 'authenticated' ) ) : ?>
+   <script src="<?php echo $_layoutParams['root_js']; ?>login.sign.up.js"></script>
+   <?php endif; ?>
+ 	
+  <?php if( Session::get( 'authenticated' ) ) : ?>
+ <script src="<?php echo $_layoutParams['root_js']; ?>mentions.js"></script>
+ 
+ <script type="text/javascript">
+ 
+ 	$('textarea').autosize(); 
+ 	
+ </script>
+ 
+ <?php endif; ?>
+ 
+ <script type="text/javascript">
+ /*
+ $(".galeryAjax").colorbox({
+   	});
+   	
+   	$('.showTooltip').tooltip();
+   	
+   	
+   jQuery(document).ready(function($) {
+   
+   jQuery("span.timeAgo").timeago();
+   
+    $(document).on('mouseenter', '#reply_post', function(){
+		if ($(this).data('hascharcount') == undefined) {
+			$(this).data('hascharcount', true).charCount({ allowed: <?php echo MAX_LENGTH; ?>, warning: 10 });
+		}
+		});
+	
+     
+});//<-------- * DOM * ------>
+*/
+
+
+refrech_contents();
+
+	var date = new Date($('.datetime').data('timestamp'));
+$('.datetime').text(date.toLocaleString());
+  </script>
+
+	</body>
+</html>
+  <?php
+   endif;//<-- Profile Private
+else:
+	
+	header ('HTTP/1.0 404 Not Found');
+	include 'public/error/404.php'; // SHOW ERROR 404
+	exit;
+      
+	endif;//<-- COUNT - 0 Result ?>

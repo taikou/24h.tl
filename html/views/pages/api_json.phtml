@@ -1,0 +1,61 @@
+<?php
+/****************************************************
+ * 
+ *  File   : api.php
+ *  
+ * 
+ **************************************************/
+header('Content-Type: text/plain; charset=utf-8;');
+	error_reporting( 0 );
+	
+	
+	if( isset( $this->userGET ) && !isset( $this->postGET ) && isset( $this->data[0]['id'] ) ) {
+	
+	 /* 
+	 *//*********************************
+	 * PATH AVATARS AND COVER
+	 *
+	 * *******************************
+	 **/
+	if( $this->info->avatar == 'avatar.png' ) {
+		$this->info->avatar_large = '';
+	} elseif(in_array($this->info->avatar,DEFAULT_AVATARS)){
+		$this->info->avatar_large = URL_BASE.'public/avatar/'.$this->info->avatar;
+	} else {
+		$this->info->avatar_large = URL_BASE.'public/avatar/'.$this->info->avatar_large;
+	}
+	 
+	$this->info->avatar       = URL_BASE.'public/avatar/'.$this->info->avatar;
+	
+	//*************
+	if( $this->info->cover_image != '' ) {
+		$this->info->cover_image  = URL_BASE.'public/cover/'.$this->info->cover_image;
+		$this->info->cover_large  = URL_BASE.'public/cover/'.$this->info->cover_large;
+	} else {
+		$this->info->cover_image  = '';
+		$this->info->cover_large  = '';
+	}
+	
+	// Output
+	echo json_encode($this->info);
+	
+	} else if ( isset( $this->userGET ) 
+				&& isset( $this->postGET ) 
+				&& $this->postGET == 'true'
+				&& isset( $this->data[0]['id'] ) 
+	) {
+	
+		$postAll = array();
+		foreach ( $this->posts as $key ) {
+			$postAll[] = $key;
+			
+		}
+		// Output
+		echo json_encode( array( 'posts' => $postAll ));
+	} else {
+		header ('HTTP/1.0 404 Not Found');
+		echo json_encode(array('error' => '404', 'output' => 'User does not exist'));
+		exit;
+	}
+	
+?>

@@ -1,0 +1,153 @@
+<?php 
+include 'views/inc/header.php'; 
+ if( Session::get( 'authenticated' ) ) : ?>
+<style>
+	
+	body
+	{
+		background-position: <?php echo $this->infoSession->bg_position; ?> 55px;
+		background-attachment: <?php echo $this->infoSession->bg_attachment; ?>;
+		
+		<?php if( $this->infoSession->bg_attachment == 'fixed' ): ?>
+		background-repeat: repeat repeat; 
+		<?php else: ?>
+		background-repeat: no-repeat; 
+		<?php endif; ?>
+		
+		background-color: <?php echo $this->infoSession->bg_color; ?>;
+		
+		<?php if( $this->infoSession->bg != '' ): ?>
+		background-image: url(<?php echo URL_BASE.'public/backgrounds/'.$this->infoSession->bg; ?>);
+		<?php endif; ?>
+	}
+	<?php include('views/inc/ios_background.php'); ?>
+	
+	body a,
+	body a:hover { color: <?php echo $this->infoSession->color_link; ?>; }
+	
+	.icons { background-color: <?php echo $this->infoSession->color_link; ?>;}
+	
+	.help li {
+		list-style-type: circle !important;
+	}
+</style>
+<?php endif;//<<<---------- * Session Active * -------->>>> ?>
+
+</head>
+<!-- Body -->
+	<body>
+
+		  <?php include 'views/inc/navigation.php'; ?>
+		  
+		   <!-- container -->  
+    <div class="container container-auth">
+    	
+    	<!-- row -->  
+    	<div class="row col-pb">
+ 
+     
+  			<div class="col-md-8">
+				
+				<div class="panel panel-default">
+				  <div class="panel-heading grid-panel-title">
+				    <h3 class="panel-title"><?php if( isset( $this->title ) ): echo stripslashes( $this->title ); endif; ?></h3>
+				  </div>
+				  <div class="panel-body">
+				   <?php if( isset( $this->data ) ): echo stripslashes( $this->data->content ); endif; ?>
+				  </div>
+				</div>
+				
+ 			</div><!--/col-md-* -->        
+             
+                     
+		     <!-- col-md-* -->  
+		     <div class="col-md-4">
+		     	
+			<div class="popout"></div>
+		
+		<button type="button" class="btn btn-info btn-block btn-border btn-lg show-toogle" data-toggle="collapse" data-target=".navleft-collapse">
+		   <i class="fa fa-bars"></i>
+		</button>
+		
+		<div class="collapsexxx navleft-collapse">
+			
+		 <?php 
+			   $totalPag = count( $this->pagesGeneral );
+			   
+			   if( $totalPag != 0 ) :
+			    ?>
+			
+		<div class="list-group">
+			
+     	   <!-- **** list-group-item **** -->	
+		  <a href="<?php echo URL_BASE.'api/'; ?>" class="list-group-item"> 
+		  	API
+			  	<span class="pull-right">
+			  		<i class="fa fa-chevron-right "></i>
+			  	</span>
+		  	</a> <!-- **** ./ list-group-item **** -->	
+		  	
+		  	<?php foreach( $this->pagesGeneral as $key ) : ?>
+		  		
+		  	<!-- **** list-group-item **** -->	
+		  <a href="<?php echo URL_BASE.$key['url'].'/'; ?>" class="list-group-item <?php if( $_GET['page'] == $key['url']  ) { echo 'active'; } ?>"> 
+		  	<?php echo stripslashes( $key['title'] ); ?>
+			  	<span class="pull-right">
+			  		<i class="fa fa-chevron-right "></i>
+			  	</span>
+		  	</a> <!-- **** ./ list-group-item **** -->	
+		  	
+		  	<?php endforeach; ?>
+		  	
+		</div><!-- * list-group * -->
+				   
+				<?php endif; ?>  
+
+				   <?php 
+				   //<---- * advertising * --->
+				   include 'views/inc/advertising.php';
+				   ?>
+				   
+				   <?php
+				   if( Session::get( 'authenticated' ) ) :
+				   //<---- * who_follow * --->
+				   include 'views/inc/who_to_follow.php';
+				   
+				   endif;
+				   //<---- * trending * --->
+				   include 'views/inc/trending.php'; 
+				   
+				   include 'views/inc/footer_session.php'; 
+				   
+				   ?>
+</div><!-- collapse -->
+
+ 			</div><!--/col-md-* -->
+ 			
+ 			
+
+    	
+  </div><!--************ Row ********************-->
+  
+  </div><!--******************** Container ******************-->
+
+	
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="<?php echo $_layoutParams['root_js']; ?>jquery.min.js"></script>
+    <script src="<?php echo $_layoutParams['root_js']; ?>jquery-ui-1.10.3.custom.min.js"></script>
+    <script src="<?php echo $_layoutParams['root_js']; ?>jquery.ui.touch-punch.min.js"></script>
+    <script src="<?php echo $_layoutParams['root_js']; ?>bootstrap.min.js"></script>
+    <script src="<?php echo $_layoutParams['root_js']; ?>bootstrap-switch.js"></script>
+    <script src="<?php echo $_layoutParams['root_js']; ?>flatui-checkbox.js"></script>
+    <script src="<?php echo $_layoutParams['root_js']; ?>functions-user.js"></script>
+    <script src="<?php echo $_layoutParams['root_js']; ?>functions.js"></script>
+   
+   
+   <?php if( !Session::get( 'authenticated' ) ) : ?>
+   <script src="<?php echo $_layoutParams['root_js']; ?>login.sign.up.js"></script>
+   <?php endif; ?>
+
+	</body>
+</html>

@@ -1,0 +1,497 @@
+<?php 
+if( !Session::get( 'authenticated' ) ) :
+	
+	header( 'location: '.URL_BASE );
+	exit;
+	
+endif;
+if( $this->infoSession->status == 'active' ):
+include 'views/inc/header.php'; ?>
+<link href="<?php echo $_layoutParams['root_css']; ?>colorpicker.css" rel="stylesheet" type="text/css" />
+<link href="<?php echo $_layoutParams['root_css']; ?>jquery.fs.picker.min.css" rel="stylesheet" type="text/css" />
+<style>
+	
+	body
+	{
+		background-position: <?php echo $this->infoSession->bg_position; ?> 55px;
+		background-attachment: <?php echo $this->infoSession->bg_attachment; ?>;
+		
+		<?php if( $this->infoSession->bg_attachment == 'fixed' ): ?>
+		background-repeat: repeat repeat; 
+		<?php else: ?>
+		background-repeat: no-repeat; 
+		<?php endif; ?>
+		
+		background-color: <?php echo $this->infoSession->bg_color; ?>;
+		
+		<?php if( $this->infoSession->bg != '' ): ?>
+		background-image: url(<?php echo URL_BASE.'public/backgrounds/'.$this->infoSession->bg; ?>);
+		<?php endif; ?>
+	}
+
+	<?php include('views/inc/ios_background.php'); ?>
+
+	body a,
+	body a:hover { color: <?php echo $this->infoSession->color_link; ?>; }
+</style>
+</head>
+	<!-- Body -->
+	<body data-max="<?php echo MAX_LENGTH; ?>" data-accept="<?php echo $_SESSION['LANG']['accept']; ?>" data-cancel="<?php echo $_SESSION['LANG']['cancel']; ?>">
+
+	<?php include 'views/inc/navigation.php'; ?>
+		  
+		   <!-- container -->  
+    <div class="container container-auth">
+    	
+    	<!-- row -->  
+    	<div class="row col-pb">
+     
+ 			
+ 			
+ 			<div class="col-md-8">
+				
+		       <?php include( 'views/modules/'.$this->module.'Module.php' ); ?>
+	
+ 			</div><!--/col-md-* -->
+
+    	
+ 		     <!-- col-md-* -->  
+		     <div class="col-md-4">
+		     	
+			<div class="popout"></div>
+		
+		<button type="button" class="btn btn-info btn-block btn-border btn-lg show-toogle" data-toggle="collapse" data-target=".navleft-collapse">
+		   <i class="fa fa-bars"></i>
+		</button>
+		
+		<div class="collapsexxx navleft-collapse">
+		 <?php 
+		 
+		  //<---- * profile_static * --->
+	      include 'views/inc/profile_static.php';
+				   
+			  
+			    ?>
+			
+		<div class="list-group">
+     	  
+		  <!-- **** list-group-item **** -->	
+		  <a href="<?php echo URL_BASE; ?>messages/"  class="list-group-item <?php if( $_GET['page'] == 'messages'  ) { echo 'active'; } ?>">
+		  	<span class="fa fa-envelope myicon-right"></span> <?php echo $_SESSION['LANG']['messages']; ?>
+		  	
+		  	<span class="pull-right">
+			  		<i class="fa fa-chevron-right "></i>
+			  	</span>
+		  	</a><!-- **** ./ list-group-item **** -->
+		  	
+		  	<!-- **** list-group-item **** -->	
+		  <a href="<?php echo URL_BASE; ?>settings/"  class="list-group-item <?php if( $_GET['page'] == 'settings'  ) { echo 'active'; } ?>">
+		  	<span class="glyphicon glyphicon-cog myicon-right"></span> <?php echo $_SESSION['LANG']['settings']; ?>
+		  	
+		  	<span class="pull-right">
+			  		<i class="fa fa-chevron-right "></i>
+			  	</span>
+		  	</a><!-- **** ./ list-group-item **** -->	
+		  	
+		  	<!-- **** list-group-item **** -->	
+		  <a href="<?php echo URL_BASE; ?>profile/"  class="list-group-item <?php if( $_GET['page'] == 'profile'  ) { echo 'active'; } ?>">
+		  	<span class="icon-user myicon-right"></span> <?php echo $_SESSION['LANG']['profile']; ?>
+		  	
+		  	<span class="pull-right">
+			  		<i class="fa fa-chevron-right "></i>
+			  	</span>
+		  	</a><!-- **** ./ list-group-item **** -->
+		  	
+		  	<!-- **** list-group-item **** -->	
+		  <a href="<?php echo URL_BASE; ?>password/"  class="list-group-item <?php if( $_GET['page'] == 'password'  ) { echo 'active'; } ?>">
+		  	<span class="glyphicon glyphicon-lock myicon-right"></span> <?php echo $_SESSION['LANG']['password']; ?>
+		  	
+		  	<span class="pull-right">
+			  		<i class="fa fa-chevron-right "></i>
+			  	</span>
+		  	</a><!-- **** ./ list-group-item **** -->	
+		  	
+		  	<!-- **** list-group-item **** -->	
+		  <a href="<?php echo URL_BASE; ?>design/"  class="list-group-item <?php if( $_GET['page'] == 'design'  ) { echo 'active'; } ?>">
+		  	<span class="glyphicon glyphicon-tint myicon-right"></span> <?php echo $_SESSION['LANG']['design']; ?>
+		  	
+		  	<span class="pull-right">
+			  		<i class="fa fa-chevron-right "></i>
+			  	</span>
+		  	</a><!-- **** ./ list-group-item **** -->
+	
+		</div><!-- * list-group * -->
+				   
+				   <?php 
+				   //<---- * advertising * --->
+				   include 'views/inc/advertising.php';
+				   ?>
+				   
+				   <?php
+				   if( Session::get( 'authenticated' ) ) :
+				   //<---- * who_follow * --->
+				   include 'views/inc/who_to_follow.php';
+				   
+				   endif;
+				   //<---- * trending * --->
+				   include 'views/inc/trending.php'; 
+				   
+				   include 'views/inc/footer_session.php'; 
+				   
+				   ?>
+                  </div><!-- navleft-collapse -->
+ 			</div><!--/col-md-* -->
+   	    	
+    	    	    	    	
+  </div><!--************ Row ********************-->
+  
+  </div><!--******************** Container ******************-->
+   
+   <script src="<?php echo $_layoutParams['root_js']; ?>jquery.min.js"></script>
+   
+   <script type="text/javascript">
+   	 $('.country_<?php echo $this->infoSession->country; ?>').attr({'selected':'selected'});
+   	 $('.<?php echo $this->infoSession->language; ?>').attr({'selected':'selected'});
+     $('.mod_<?php echo $this->infoSession->mode; ?>').attr({'selected':'selected'});
+     $('#radio_<?php echo $this->infoSession->bg_position	; ?>').attr({'checked':'checked'});
+     $('#radio_<?php echo $this->infoSession->messages_private; ?>').attr({'checked':'checked'});
+
+	
+   </script>
+   
+   <script src="<?php echo $_layoutParams['root_js']; ?>jquery.easing.1.3.js"></script>
+    <script src="<?php echo $_layoutParams['root_js']; ?>jquery-ui-1.10.3.custom.min.js"></script>
+   <script src="<?php echo $_layoutParams['root_js']; ?>jquery.ui.touch-punch.min.js"></script>
+   <script src="<?php echo $_layoutParams['root_js']; ?>bootstrap.min.js"></script>
+   <script src="<?php echo $_layoutParams['root_js']; ?>bootstrap-switch.js"></script>
+   <script src="<?php echo $_layoutParams['root_js']; ?>flatui-checkbox.js"></script>
+   <script src="<?php echo $_layoutParams['root_js']; ?>jquery.autosize.min.js"></script>
+      <script src="https://unpkg.com/smartphoto@1.1.0/js/jquery-smartphoto.min.js"></script>
+
+   <script src="<?php echo $_layoutParams['root_js']; ?>functions.js"></script>
+   <script src="<?php echo $_layoutParams['root_js']; ?>count.js"></script>
+   <script src="<?php echo $_layoutParams['root_js']; ?>jquery.form.js"></script>
+   <script src="<?php echo $_layoutParams['root_js']; ?>settings.user.js?4"></script>
+   <script src="<?php echo $_layoutParams['root_js']; ?>timeago/jqueryTimeago_<?php echo $_SESSION['lang']; ?>.js"></script>
+   <script src="<?php echo $_layoutParams['root_js']; ?>colorpicker.js"></script>
+   <script src="<?php echo $_layoutParams['root_js']; ?>jquery.colorbox.js"></script>
+   <script src="<?php echo $_layoutParams['root_js']; ?>jquery.scroll.user.js"></script>
+   <script src="<?php echo $_layoutParams['root_js']; ?>bootbox.min.js"></script>
+   <script src="<?php echo $_layoutParams['root_js']; ?>tinycolor.js"></script>
+   <script src="<?php echo $_layoutParams['root_js']; ?>jquery.fs.picker.min.js"></script>
+   <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAcmxUZ0iVE7VIn2tJthlPA8a7xQh794g0&sensor=false&amp;libraries=places"></script>
+   <script src="<?php echo $_layoutParams['root_js']; ?>jquery.geocomplete.js"></script> 
+ 	
+ <script type="text/javascript">
+ 
+    
+   jQuery(document).ready(function($) {
+   	
+   	
+   
+   <?php if( Session::get( 'authenticated' ) && $_GET['page'] == 'messages' ): ?>
+   $('.posts').scrollPagination({
+		nop     : 10, // El número de datos por desplazarse a cargar
+		offset  : 0, // Desplazamiento inicial, comienza en 0, en este caso
+		error   : '',
+		delay   : 500, // Cuando se desplaza por los datos se cargan después de un período de tiempo retardado.
+		               // Esto se debe principalmente a problemas de usabilidad. Usted puede modificar esto como mejor le parezca
+		scroll  : false, // El bit principal, si se define como datos falsos no se carga como el usuario se desplaza. 
+		query   : 0,
+		file    :'get_messages.php',
+		_userId : <?php echo$_SESSION['authenticated']; ?>,
+		totalGlobal :  <?php echo  $this->countMgs; ?>
+	});
+	
+		
+   <?php endif; ?>
+   
+   bootbox.setDefaults({
+  /**
+   * @optional String
+   * @default: en
+   * which locale settings to use to translate the three
+   * standard button labels: OK, CONFIRM, CANCEL
+   */
+  locale: "<?php echo $_SESSION['lang']; ?>"
+  
+});
+   
+   <?php if( Session::get( 'authenticated' ) && $_GET['page'] == 'settings' ): ?>
+   
+   $("input[type=radio], input[type=checkbox]").picker();
+   
+   $(".delete-account").click(function() {
+   	var out  = 'delete=true';
+   	
+   	bootbox.confirm("<?php echo $_SESSION['LANG']['confirm_delete_account']; ?>", function(r) {
+ 
+   		if( r == true )
+	     {
+	
+		 $.ajax({
+		   type: "POST",
+		   url: "public/ajax/delete_account.php",
+		   data: out,
+		   success: function( result ){
+		   if( result == 'ok' )
+		   { 
+		   	window.location.reload();
+		   }//<-- IF
+			   else {
+			   	 bootbox.alert('<?php echo $_SESSION['LANG']['error']; ?>');
+			   }
+		 }//<-- RESULT 
+	   });//<--- AJAX
+
+	 }//END IF R TRUE 
+	 
+	  }); //Jconfirm  
+   	
+   });
+   <?php endif;//<<--- Settings ?>
+   
+   
+    
+   //====== TIME AGO
+	
+<?php if( Session::get( 'authenticated' ) ) : ?>
+		
+		$("#bio").charCount({ allowed: <?php echo MAX_LENGTH*10; ?>, warning: 10, css: 'counterBio' });
+	
+	<?php if( $_GET['page'] == 'profile' ): ?>
+	
+	 $(function(){
+        $("#location").geocomplete()
+        .bind("geocode:result", function(event, result){
+          })
+;
+        });
+
+    //<<<<<<<=================== * UPLOAD AVATAR  * ===============>>>>>>>//
+    
+    $(document).on('change', '#uploadAvatar', function(){
+    $('#loader_gif_1').remove();  		 
+	$('<div id="loader_gif_1"></div>').appendTo('.labelAvatar');
+	(function(){
+	 $("#formAvatar").ajaxForm({
+	 dataType : 'json',	
+	 success:  function(e){
+	 if( e ){
+        if( e.error == 1 ){
+		$('#loader_gif_1').remove();
+		$('.popout').html( ''+ e.output +'' ).fadeIn();
+		if( e.reload == 1 ){
+			window.location.reload();
+		  } 
+		}//<-- Error
+		$('#uploadAvatar').val('');
+		if( e.error == 0 ) {
+				$('.popout').fadeOut();
+				$('#loader_gif_1').css({'cursor':'pointer',background:'url("<?php echo URL_BASE; ?>thumb/128-128-public/avatar/'+ e.photo +'") center center no-repeat #FFF'}).addClass('deletePhoto').attr( 'data', e.photo ).attr( 'title','<?php echo $_SESSION['LANG']['delete_image']; ?>' );
+				$('.photo-card-live').html('<img src="<?php echo URL_BASE; ?>thumb/80-80-public/avatar/'+ e.photo +'" alt="Image" class="border-image-profile img-rounded photo-card" />');
+				$('.userAvatar').html('<img class="img-rounded" src="<?php echo URL_BASE; ?>thumb/24-24-public/avatar/'+ e.photo +'" />');
+			}
+		}//<-- e
+			else {
+				bootbox.alert('<?php echo $_SESSION['LANG']['error']; ?>');
+				$('#uploadAvatar').val('');
+				
+			}
+		}//<----- SUCCESS
+		}).submit();
+		})(); //<--- FUNCTION %
+	});//<<<<<<<--- * LIVE * --->>>>>>>>>>>
+	
+		//===== DELETE PHOTO AVATAR
+		$(document).on('click',".deletePhoto",function(){ 
+			//=== PARAM
+			var element     = $(this);
+			var id          = element.attr("data");
+			var info        = 'token_id=' + id;
+			$.ajax({
+			   type: "GET",
+			   url: "<?php echo URL_BASE; ?>public/ajax/delete_photo_avatar.php",
+			   data: info,
+			   success: function( output ){
+			   if( output )
+			   {
+			   	$('.photo-card-live').html('<img src="<?php echo URL_BASE; ?>thumb/80-80-public/avatar/' + output + '" alt="Image" class="border-image-profile img-rounded photo-card" />');
+			   	$('.userAvatar').html('<img class="img-rounded" src="<?php echo URL_BASE; ?>thumb/24-24-public/avatar/' + output + '" />');
+			   	   $('.labelAvatar').css({ background: 'url("<?php echo URL_BASE; ?>thumb/128-128-public/avatar/' + output + '") center center no-repeat #FFF' });
+			    	$('#photoId').val('');
+			   	     element.fadeOut('fast',function(){
+		   		      element.remove();
+		   		});//<-- FUNCTION
+					   }
+					 }//<-- OUTPUT
+				});//<-- AJAX
+			});//<<<<<<<--- * CLICK * --->>>>>>>>>>>
+	
+	//<<<<<<<=================== * UPLOAD COVER  * ===============>>>>>>>//
+	$(document).on('change', '#uploadCover', function(){
+    $('#loader_gif_2').remove();  		 
+	$('<div id="loader_gif_2"></div>').appendTo('.label_cover');
+	(function(){
+	 $("#formCover").ajaxForm({
+	 dataType : 'json',	
+	 success:  function(e){
+	 if( e ){
+        if( e.error == 1 ){
+		$('#loader_gif_2').remove();
+		$('.popout').html( ''+ e.output +'' ).fadeIn();
+		if( e.reload == 1 ){
+			window.location.reload();
+		  } 
+		}//<-- Error
+		$('#uploadCover').val('');
+		if( e.error == 0 )
+			{	
+				$('.popout').fadeOut();
+				$('#preview_cover').html('<img src="<?php echo URL_BASE ?>thumb/499-151-public/cover/'+ e.photo +'" />');
+				$('#loader_gif_2').css({'cursor':'pointer',background:'url("<?php echo URL_BASE; ?>public/cover/'+ e.photo +'") center center no-repeat #FFF','background-size': 'cover'}).addClass('deleteCover').attr( 'data', e.photo ).attr( 'title','<?php echo $_SESSION['LANG']['delete_image']; ?>' );
+				 $('.cover-wall').css({ background: 'url("<?php echo URL_BASE; ?>public/cover/'+ e.photo +'") center center <?php echo $this->infoSession->color_link; ?>', height: '95px','background-size': 'cover' })		
+			}
+		}//<-- e
+			else {
+				bootbox.alert('<?php echo $_SESSION['LANG']['error']; ?>');
+				$('#uploadCover').val('');
+				
+			}
+		}//<----- SUCCESS
+		}).submit();
+		})(); //<--- FUNCTION %
+	});//<<<<<<<--- * LIVE * --->>>>>>>>>>>
+	
+	//===== DELETE COVER
+		$(document).on('click',".deleteCover",function(){ 
+			//=== PARAM
+			var element     = $(this);
+			var id          = element.attr("data");
+			var info        = 'token_id=' + id;
+			$.ajax({
+			   type: "GET",
+			   url: "<?php echo URL_BASE; ?>public/ajax/delete_photo_cover.php",
+			   data: info,
+			   success: function( output ){
+			   if( output == 'TRUE' )
+			   {
+			   	   $('#coverUser').css({ backgroundImage: 'none' });
+			   	   $('.cover-wall').css({ background: '<?php echo $this->infoSession->color_link; ?>', height: '50px' });
+			    	$('#photoId').val('');
+			   	     element.fadeOut('fast',function(){
+		   		      element.remove();
+		   		});//<-- FUNCTION
+		   		
+		   		 $('#preview_cover > img').slideUp('fast',function(){
+		   		      $('#preview_cover > img').remove();
+		   		});//<-- FUNCTION
+		   		
+				}//<--- TRUE
+					 }//<-- OUTPUT
+				});//<-- AJAX
+			});//<<<<<<<--- * CLICK * --->>>>>>>>>>>
+			
+	<?php endif; //<--- PROFILE ?>
+	
+	<?php 
+	//<<<<<<-------------- * Design * ---------------->>>>
+	if( $_GET['page'] == 'design' ): ?>
+		
+		 $("input[type=radio], input[type=checkbox]").picker();
+		 
+		//<<<<<<<=================== * Upload Background  * ===============>>>>>>>//
+	$(document).on('change', '#upload_bg', function(){
+    $('#loader_gif_1').remove();  		 
+	$('<div id="loader_gif_1"></div>').appendTo('.labelAvatar');
+	(function(){
+	 $("#formBg").ajaxForm({
+	 dataType : 'json',	
+	 success:  function(e){
+	 if( e ){
+        if( e.error == 1 ){
+		$('#loader_gif_1').remove();
+		$('.popout').html( ''+ e.output +'' ).fadeIn();
+		if( e.reload == 1 ){
+			window.location.reload();
+		  } 
+		}//<-- Error
+		$('#upload_bg').val('');
+		if( e.error == 0 )
+			{	
+				$('.popout').fadeOut();
+				$('body').css({backgroundImage:'url("public/backgrounds/'+e.photo+'")'});
+				$('#loader_gif_1').css({'cursor':'pointer',background:'url("<?php echo URL_BASE; ?>thumb_fixed/100-100-public/backgrounds/'+ e.photo +'") center center no-repeat #FFF', 'background-size' : 'cover'}).addClass('deleteBg').attr( 'data-id', e.photo ).attr( 'title','<?php echo $_SESSION['LANG']['delete_image']; ?>' );			
+				
+
+			}
+		}//<-- e
+			else {
+				bootbox.alert('<?php echo $_SESSION['LANG']['error']; ?>');
+				$('#upload_bg').val('');
+				
+			}
+		}//<----- SUCCESS
+		}).submit();
+		})(); //<--- FUNCTION %
+	});//<<<<<<<--- * LIVE * --->>>>>>>>>>>
+	
+	//------
+		$("#link").ColorPickerSliders({
+			color: '<?php echo $this->infoSession->color_link; ?>',
+			flat: false,
+			previewformat: 'hex',	
+			customswatches: false,
+			swatches: false,		 
+        order: {
+            hsl: 1
+        },
+        onchange: function(container, color) {
+        	
+        	$('#link').css('background','' + color.tiny.toHexString());
+			$('#linkData').val('' + color.tiny.toHexString());
+			$('.cover-wall').css('background-color','' + color.tiny.toHexString());
+			$('body a').not('.username_right,.options_toogle > li > a, .list-group-item, .dropdown a, .user-name-profile-card a, .nav-user-profile-wall > li > a ').css('color','#' + color.tiny.toRgbString());
+
+        }
+    });
+		
+		
+		//------
+		$("#bg_color").ColorPickerSliders({
+			color: '<?php echo $this->infoSession->bg_color; ?>',
+			flat: false,
+			previewformat: 'hex',
+			customswatches: false,	
+			swatches: false,			 
+        order: {
+            hsl: 1
+        },
+        onchange: function(container, color) {
+        	
+        	$('#bg_color').css('background','' + color.tiny.toHexString());
+			$('#bgData').val('' + color.tiny.toHexString());
+			$('body').css('background-color','' + color.tiny.toHexString());
+
+        }
+    });
+		
+	<?php endif;//<<<--- Design ?>
+	
+<?php endif; //<--- SESSION ?>
+     
+     jQuery("span.timeAgo").timeago();
+     
+     
+});//<-------- * DOM * ------>
+
+  </script>
+
+	</body>
+</html>
+  <?php
+else:
+	
+	session_destroy();
+      
+	endif; ?>
