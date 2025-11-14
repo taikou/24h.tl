@@ -567,6 +567,11 @@ error_log($sql);
 			$ret= $query->fetch( PDO::FETCH_ASSOC );
 			
 			if($ret) {
+				// デバッグ: パスワードハッシュの情報をログ出力
+				error_log('[LOGIN DEBUG] User: ' . $user);
+				error_log('[LOGIN DEBUG] Stored password hash length: ' . strlen($ret['password']));
+				error_log('[LOGIN DEBUG] Stored password hash: ' . $ret['password']);
+				
 				// パスワード検証（新しいハッシュと旧 SHA-1 の両方に対応）
 				$password_valid = false;
 				$needs_upgrade = false;
@@ -574,23 +579,33 @@ error_log($sql);
 				// 新しい bcrypt ハッシュで検証
 				if (password_verify($user_input, $ret['password'])) {
 					$password_valid = true;
+					error_log('[LOGIN DEBUG] Password verified with bcrypt');
 				}
 				// 旧 SHA-1 ハッシュで検証（互換性のため）
 				elseif (sha1($user_input) === $ret['password']) {
 					$password_valid = true;
 					$needs_upgrade = true; // 次回ログイン時に新しいハッシュに更新
+					error_log('[LOGIN DEBUG] Password verified with SHA-1 (needs upgrade)');
+				} else {
+					error_log('[LOGIN DEBUG] Password verification failed');
+					error_log('[LOGIN DEBUG] SHA-1 of input: ' . sha1($user_input));
 				}
 				
 				if ($password_valid) {
 					// 旧パスワードを新しいハッシュに移行
 					if ($needs_upgrade) {
 						$new_hash = password_hash($user_input, PASSWORD_BCRYPT, ['cost' => 12]);
+						error_log('[LOGIN DEBUG] Upgrading password to bcrypt');
+						error_log('[LOGIN DEBUG] New hash length: ' . strlen($new_hash));
+						error_log('[LOGIN DEBUG] New hash: ' . $new_hash);
 						$update_sql = "UPDATE users SET password = :new_hash WHERE id = :id LIMIT 1";
 						$update_query = $this->db->prepare($update_sql);
-						$update_query->execute([
+						$result = $update_query->execute([
 							':new_hash' => $new_hash,
 							':id' => $ret['id']
 						]);
+						error_log('[LOGIN DEBUG] Password update result: ' . ($result ? 'SUCCESS' : 'FAILED'));
+						error_log('[LOGIN DEBUG] Rows affected: ' . $update_query->rowCount());
 					}
 					
 					// HTTPS環境判定
