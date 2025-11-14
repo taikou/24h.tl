@@ -145,6 +145,12 @@
   transition: opacity .5s ease-in-out 1s, transform .07s ease-in-out 0s, top .07s ease-in-out 0s;
 }
 
+/* モバイル用: 即座に表示 */
+.dw-reactions-button.mobile-active .dw-reaction.mobile-instant {
+  opacity: 1 !important;
+  transition: opacity 0s, transform .07s ease-in-out 0s, top .07s ease-in-out 0s !important;
+}
+
 .dw-reactions-button.reaction-show .dw-reaction {
   opacity: 1;
   animation-name: reaction;
