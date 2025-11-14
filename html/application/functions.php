@@ -625,7 +625,13 @@ public static function resizeImageFixed( $image, $width, $height, $imageNew = nu
 	}//<-------- FUNCTION END	
 	
 	public static function getYoutubeId( $url ) {
-	 $pattern = 
+	    // YouTube Shorts用の処理を追加
+	    if (preg_match('#(?:youtube\.com/shorts/)([a-zA-Z0-9_-]{11})#', $url, $shortsMatches)) {
+	        return $shortsMatches[1];
+	    }
+	    
+	    // 従来のYouTube URL処理
+	    $pattern = 
 	     '%^# Match any youtube URL
 	    (?:https?://)? 
 	    (?:www\.)?     
@@ -635,7 +641,6 @@ public static function resizeImageFixed( $image, $width, $height, $imageNew = nu
 	      (?:           
 	        /embed/    
 	      | /v/         
-	      | /shorts/    
 	      | .*v=        
 	      )            
 	    )              
@@ -643,9 +648,8 @@ public static function resizeImageFixed( $image, $width, $height, $imageNew = nu
 	    ($|&).*         
 	    $%x'
 	    ;
-	        ;
 	    $result = preg_match( $pattern, $url, $matches );
-	    if ( false !== $result ) {
+	    if ( false !== $result && isset($matches[1]) ) {
 	        return $matches[1];
 	    }
 	    return false;
