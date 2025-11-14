@@ -515,15 +515,17 @@ if(1){
 					  		@<?php echo $infoUser->username; ?>
 					  	</div>
 					  	
-					  	<?php if( $_POST['_geolocation'] != '' ) : ?>
-					  	<div class="container-geo">
-					  		<i class="fa fa-map-marker ico-geo myicon-right"></i> 
-					  		
-					  		<a class="text-geo" target="_blank" href="https://www.google.com/maps/place/<?php echo $_POST['_geolocation']; ?>">
-					  			<?php echo $_POST['_geolocation']; ?>
-					  			</a>
-					  	</div>
-					  	<?php endif; ?>
+				  	<?php /* 位置情報表示を非表示
+				  	<?php if( $_POST['_geolocation'] != '' ) : ?>
+				  	<div class="container-geo">
+				  		<i class="fa fa-map-marker ico-geo myicon-right"></i> 
+				  		
+				  		<a class="text-geo" target="_blank" href="https://www.google.com/maps/place/<?php echo $_POST['_geolocation']; ?>">
+				  			<?php echo $_POST['_geolocation']; ?>
+				  			</a>
+				  	</div>
+				  	<?php endif; ?>
+				  	*/ ?>
 					  	
 					  <a href="<?php echo $urlStatus; ?>" class="date-status" title="<?php echo date('d/m/Y', time()); ?>">
 					  	<span class="small sm-font sm-date timestamp timeAgo" data="<?php echo date('c', time()); ?>"></span>

@@ -40,15 +40,17 @@
 					  		@<?php echo $key['username']; ?>
 					  	</div>
 					  	
-					  	<?php if( $key['geolocation'] != '' ) : ?>
-					  	<div class="container-geo">
-					  		<i class="fa fa-map-marker ico-geo myicon-right"></i> 
-					  		
-					  		<a class="text-geo" target="_blank" href="https://www.google.com/maps/place/<?php echo $key['geolocation']; ?>">
-					  			<?php echo $key['geolocation']; ?>
-					  			</a>
-					  	</div>
-					  	<?php endif; ?>
+				  	<?php /* 位置情報表示を非表示
+				  	<?php if( $key['geolocation'] != '' ) : ?>
+				  	<div class="container-geo">
+				  		<i class="fa fa-map-marker ico-geo myicon-right"></i> 
+				  		
+				  		<a class="text-geo" target="_blank" href="https://www.google.com/maps/place/<?php echo $key['geolocation']; ?>">
+				  			<?php echo $key['geolocation']; ?>
+				  			</a>
+				  	</div>
+				  	<?php endif; ?>
+				  	*/ ?>
 					  	
 					  	<a href="<?php echo URL_BASE.$key['username'].'/status/'.$key['id']; ?>" class="date-status" title="<?php echo date('d/m/Y', strtotime( $key['date'] )); ?>">
 					  		<span class="small sm-font sm-date timestamp timeAgo" data="<?php echo date('c', strtotime( $key['date'] )); ?>"></span>
