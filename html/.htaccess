@@ -10,10 +10,10 @@ LimitRequestBody 10000000
 php_value memory_limit 500M
 
 php_value upload_max_filesize "8M"
-php_value session.cookie_lifetime 1209600
-php_value session.gc_maxlifetime 1209600
+php_value session.cookie_lifetime 2592000
+php_value session.gc_maxlifetime 2592000
 php_value session.save_path "/opt/remi/php56/root/var/lib/php/session/24h.tl"
-#14 days
+#30 days
 
 # set files headers
 <IfModule mod_headers.c>
@@ -26,6 +26,15 @@ Header set Cache-Control "max-age=2678400, public, must-revalidate"
 <filesMatch "(thumb_resize\.php|thumb_resize_fixed\.php|image_url\.php)$">
 Header set Cache-Control "max-age=2678400, must-revalidate"
 </filesMatch>
+</IfModule>
+
+# Security Headers
+<IfModule mod_headers.c>
+    Header set X-XSS-Protection "1; mode=block"
+    Header set X-Frame-Options "SAMEORIGIN"
+    Header set X-Content-Type-Options "nosniff"
+    Header set Referrer-Policy "strict-origin-when-cross-origin"
+    Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains"
 </IfModule>
 
 #+SymLinksIfOwnerMatch

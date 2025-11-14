@@ -473,7 +473,7 @@ class AjaxRequest
 		0,
 		''
 		);";
-		$password = sha1( $_POST['password'] );
+		$password = password_hash($_POST['password'], PASSWORD_BCRYPT, ['cost' => 12]);
 
 		$stmt  = $this->db->prepare( $sql );
 		
@@ -548,51 +548,76 @@ error_log($sql);
 	 * Sign in
 	 * -----------------------
 	 */
-   	 $pass = sha1( $_POST['password'] );
 	 $user = $_POST['user'];
+	 $user_input = $_POST['password'];
 	 
+	 // パスワードフィールドも取得するように SQL を変更
    	 $sql = "
    	 SELECT 
    	 id, 
    	 username,
-   	 language
+   	 language,
+   	 password
    	 FROM users
-   	 WHERE username = :user && password = :pass && status = 'active' ||
-   	 email = :user && password = :pass && status = 'active'";
+   	 WHERE (username = :user || email = :user) && status = 'active'";
 	 
 	 $query = $this->db->prepare( $sql );
-	  if( $query->execute( 
-	  						  array( 
-	  						  ':user' => $user, 
-	  						  ':pass' => $pass
-	  						  ) 
-							 ) 
-			               )
+	  if( $query->execute( array( ':user' => $user ) ) )
 		{
 			$ret= $query->fetch( PDO::FETCH_ASSOC );
-			if($ret){
-				if(preg_match('/24h_timeline/',$_SERVER['HTTP_USER_AGENT'])){
-					//アプリの場合は自動ログインTOKENを保持（こっちの方法は未可動）
-					$token=hash('sha512',$ret['id'].'_'.time());
-					$time = time() + 60*60*24*10000; //10000日
-					setcookie('app_token',$token,$time);
-					$sql="INSERT INTO user_apptoken (uid, token) VALUES('".$ret['id']."','".$token."') ON DUPLICATE KEY UPDATE token='".$token."', firstlogin_at=now(), lastlogin_at=''";
-					$this->db->query($sql);
-					
-					//自動再ログイン用処理(もう一つの方法)
-					$sql="UPDATE users SET last_sessid='".session_id()."' WHERE id='".$ret['id']."' LIMIT 1";
-					error_log($sql);
-					$this->db->query($sql);
-					$time = time() + 60*60*24*1000;
-					setcookie('24h_app_autosessid',session_id(),$time);
-					error_log(session_name().','.session_id().','.$time);
+			
+			if($ret) {
+				// パスワード検証（新しいハッシュと旧 SHA-1 の両方に対応）
+				$password_valid = false;
+				$needs_upgrade = false;
+				
+				// 新しい bcrypt ハッシュで検証
+				if (password_verify($user_input, $ret['password'])) {
+					$password_valid = true;
 				}
-
+				// 旧 SHA-1 ハッシュで検証（互換性のため）
+				elseif (sha1($user_input) === $ret['password']) {
+					$password_valid = true;
+					$needs_upgrade = true; // 次回ログイン時に新しいハッシュに更新
+				}
+				
+				if ($password_valid) {
+					// 旧パスワードを新しいハッシュに移行
+					if ($needs_upgrade) {
+						$new_hash = password_hash($user_input, PASSWORD_BCRYPT, ['cost' => 12]);
+						$update_sql = "UPDATE users SET password = :new_hash WHERE id = :id LIMIT 1";
+						$update_query = $this->db->prepare($update_sql);
+						$update_query->execute([
+							':new_hash' => $new_hash,
+							':id' => $ret['id']
+						]);
+					}
 					
+					if(preg_match('/24h_timeline/',$_SERVER['HTTP_USER_AGENT'])){
+						//アプリの場合は自動ログインTOKENを保持（こっちの方法は未可動）
+						$token=hash('sha512',$ret['id'].'_'.time());
+						$time = time() + 60*60*24*30; //30日
+						setcookie('app_token',$token,$time, '/', '', true, true); // secure, httpOnly
+						$sql="INSERT INTO user_apptoken (uid, token) VALUES('".$ret['id']."','".$token."') ON DUPLICATE KEY UPDATE token='".$token."', firstlogin_at=now(), lastlogin_at=''";
+						$this->db->query($sql);
+						
+						//自動再ログイン用処理(もう一つの方法)
+						$sql="UPDATE users SET last_sessid='".session_id()."' WHERE id='".$ret['id']."' LIMIT 1";
+						error_log($sql);
+						$this->db->query($sql);
+						$time = time() + 60*60*24*30; //30日
+						setcookie('24h_app_autosessid',session_id(),$time, '/', '', true, true); // secure, httpOnly
+						error_log(session_name().','.session_id().','.$time);
+					}
+					
+					// パスワードフィールドを返り値から除外
+					unset($ret['password']);
+					return $ret;
+				}
 			}
-			return $ret;
 		}
 	  $this->db = null;
+	  return false;
 	 
    }//<-- end Method
    
@@ -602,30 +627,59 @@ error_log($sql);
 	 * Log in Admin
 	 * -----------------------
 	 */
-
-   	 $pass = sha1( $_POST['pass'] );
 	 $user = $_POST['usr'];
+	 $user_input = $_POST['pass'];
 	 
+	 // パスワードフィールドも取得するように SQL を変更
    	 $sql = "
    	 SELECT 
    	 id, 
    	 user,
-   	 name
+   	 name,
+   	 pass
    	 FROM admin
-   	 WHERE user = :user && pass = :pass && status = 'active'";
+   	 WHERE user = :user && status = 'active'";
 	 
 	 $query = $this->db->prepare( $sql );
-	  if( $query->execute( 
-	  						  array( 
-	  						  ':user' => $user, 
-	  						  ':pass' => $pass
-	  						  ) 
-							 ) 
-			               )
+	  if( $query->execute( array( ':user' => $user ) ) )
 		{
-			return $query->fetch( PDO::FETCH_ASSOC );
+			$ret = $query->fetch( PDO::FETCH_ASSOC );
+			
+			if($ret) {
+				// パスワード検証（新しいハッシュと旧 SHA-1 の両方に対応）
+				$password_valid = false;
+				$needs_upgrade = false;
+				
+				// 新しい bcrypt ハッシュで検証
+				if (password_verify($user_input, $ret['pass'])) {
+					$password_valid = true;
+				}
+				// 旧 SHA-1 ハッシュで検証（互換性のため）
+				elseif (sha1($user_input) === $ret['pass']) {
+					$password_valid = true;
+					$needs_upgrade = true;
+				}
+				
+				if ($password_valid) {
+					// 旧パスワードを新しいハッシュに移行
+					if ($needs_upgrade) {
+						$new_hash = password_hash($user_input, PASSWORD_BCRYPT, ['cost' => 12]);
+						$update_sql = "UPDATE admin SET pass = :new_hash WHERE id = :id LIMIT 1";
+						$update_query = $this->db->prepare($update_sql);
+						$update_query->execute([
+							':new_hash' => $new_hash,
+							':id' => $ret['id']
+						]);
+					}
+					
+					// パスワードフィールドを返り値から除外
+					unset($ret['pass']);
+					return $ret;
+				}
+			}
 		}
 	  $this->db = null;
+	  return false;
 	 
    }//<-- end Method
    
@@ -2617,7 +2671,7 @@ error_log($sql);
 		 *  from Page http://sitename.com/password/
 		 * ----------------------------------------
 		 */
-		$pass        = sha1( $_POST['confirm'] );
+		$pass        = password_hash($_POST['confirm'], PASSWORD_BCRYPT, ['cost' => 12]);
 		$sql = "UPDATE users SET password = :pass WHERE id = :user";
 		$stmt = $this->db->prepare( $sql );
 		$stmt->bindValue( ':pass', $pass, PDO::PARAM_STR );
@@ -2645,7 +2699,7 @@ error_log($sql);
 			return false;
 		}
 		
-		$pass = sha1( $_POST['pass_2'] );
+		$pass = password_hash($_POST['pass_2'], PASSWORD_BCRYPT, ['cost' => 12]);
 		$sql = "UPDATE 
 		users U 
 		INNER JOIN recover_pass R ON U.email = R.email

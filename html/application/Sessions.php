@@ -7,6 +7,11 @@
 class Session
 {
 	public static function init() {
+		// セッション Cookie のセキュリティ設定
+		ini_set('session.cookie_httponly', 1);
+		ini_set('session.cookie_secure', 1); // HTTPS 環境の場合のみ
+		ini_set('session.cookie_samesite', 'Strict');
+		
 		session_start();
 	}//<--- * END init() * --->
 	

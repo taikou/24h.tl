@@ -36,8 +36,8 @@ define( 'SMTP_PASSWORD', '' ); //SMTP password
 define( 'SMTP_PORT', 587 ); //TCP port to connect to
 
 /* BIT URL PARAMS */
-define( 'BIT_URL_USER', 'o_4tvvh0atu0' );
-define( 'BIT_URL_KEY', 'R_7abbe12cf37846cfb678578a69f3e631' );
+define( 'BIT_URL_USER', getenv('BITLY_USER') ?: '' );
+define( 'BIT_URL_KEY', getenv('BITLY_KEY') ?: '' );
 
 //<--- *  NOT MODIFIED * --->
 define('DEFAULT_CONTROLLER', 'index');
@@ -63,15 +63,20 @@ $config->set( 'time', date( 'Y-m-d G:i:s', time() ) );
  * TWITTER KEY
  * 
  */
-define('YOUR_CONSUMER_KEY', 'enKpW2b45QGGlmqVu9UaY1aT3'); //Consumer Key (API Key)
-define('YOUR_CONSUMER_SECRET', 'rlVjXUbQ5fnkjcd1GvY1UhVzI7egJxScidhwwLbhfHlbn6mhsY'); //Consumer Secret (API Secret)
+define('YOUR_CONSUMER_KEY', getenv('TWITTER_CONSUMER_KEY') ?: ''); //Consumer Key (API Key)
+define('YOUR_CONSUMER_SECRET', getenv('TWITTER_CONSUMER_SECRET') ?: ''); //Consumer Secret (API Secret)
+
+// 環境変数が設定されていない場合の警告
+if (empty(YOUR_CONSUMER_KEY) || empty(YOUR_CONSUMER_SECRET)) {
+    error_log('Warning: Twitter API credentials not configured via environment variables');
+}
 
 /*
  * FACEBOOK KEY
  * 
  */
-define('APP_ID', '');//(API ID)
-define('APP_SECRET', '');//(API Secret)
+define('APP_ID', getenv('FACEBOOK_APP_ID') ?: '');//(API ID)
+define('APP_SECRET', getenv('FACEBOOK_APP_SECRET') ?: '');//(API Secret)
 
 //Decoo追加
 const DEFAULT_AVATARS=['bear.png','bird.png','butterfly.png','carp.png','cat.png','chicken.png','crab.png','dolphin.png','duck.png','dyno.png','elephant.png','fish.png','fox.png','frog.png','giraffe.png','gorilla.png','horse.png','kangaroo.png','lion.png','mouse.png','otter.png','panda.png','parrot.png','pelican.png','penguin.png','pig.png','rabbit.png','sea_lion.png','seahorse.png','shark.png','snake.png','swan.png','t_rex.png','turtle.png','whale.png','wolf.png'];

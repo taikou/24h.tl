@@ -23,7 +23,20 @@ if (
 		include('../../application/functions.php'); 
 		include('../../application/DataConfig.php');	
  		
-		if ( !empty( $passCurrent->password ) && sha1( $_POST['current'] ) != $passCurrent->password ) {
+		// パスワード検証（新しいハッシュと旧 SHA-1 の両方に対応）
+		$current_password_valid = false;
+		if (!empty($passCurrent->password)) {
+			// 新しい bcrypt ハッシュで検証
+			if (password_verify($_POST['current'], $passCurrent->password)) {
+				$current_password_valid = true;
+			}
+			// 旧 SHA-1 ハッシュで検証（互換性のため）
+			elseif (sha1($_POST['current']) === $passCurrent->password) {
+				$current_password_valid = true;
+			}
+		}
+		
+		if (!$current_password_valid) {
 			echo json_encode( array( 'response' => $_SESSION['LANG']['pass_incorrect'], 'focus' => 'current' ) );
 		} else if ( mb_strlen( $_POST['new'], 'utf8' ) < 5 || mb_strlen( $_POST['new'], 'utf8' ) > 20 ) {
 			echo json_encode( array( 'response' => $_SESSION['LANG']['pass_length'], 'focus' => 'new' ) );
