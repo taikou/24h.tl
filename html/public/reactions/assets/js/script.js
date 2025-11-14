@@ -15,6 +15,9 @@
 		}
 	});
 
+	// タップ処理中フラグ（重複イベント防止用）
+	var isProcessingTouch = false;
+
 	// PC用: マウスホバーでリアクションボックスを表示
 	$(document).on( 'mouseenter', 'div.dw-reactions-button', function(e){
 		if($(this).parent().data('type')=='vote'){
@@ -26,8 +29,33 @@
 			$(this).removeClass('reaction-show');
 	});
 
-	// モバイル用: タップでリアクションボックスを表示/非表示をトグル
-	$(document).on('click touchstart', '.dw-reactions-main-button:not(.dw_reaction_like, .dw_reaction_love, .dw_reaction_haha, .dw_reaction_wow, .dw_reaction_sad, .dw_reaction_angry)', function(e){
+	// モバイル用: タップでリアクションボックスを表示
+	$(document).on('touchstart', '.dw-reactions-main-button:not(.dw_reaction_like, .dw_reaction_love, .dw_reaction_haha, .dw_reaction_wow, .dw_reaction_sad, .dw_reaction_angry)', function(e){
+		var parent = $(this).parent();
+		if(parent.parent().data('type')=='vote' && !parent.hasClass('reaction-show')){
+			e.preventDefault();
+			e.stopPropagation();
+			isProcessingTouch = true;
+			
+			// 他のリアクションボックスを閉じる
+			$('div.dw-reactions-button').removeClass('reaction-show');
+			// このリアクションボックスを表示
+			parent.addClass('reaction-show');
+			
+			// 少し遅延してから外側タップの監視を有効化
+			setTimeout(function(){
+				isProcessingTouch = false;
+			}, 300);
+			
+			return false;
+		}
+	});
+
+	// PC用: クリックでリアクションボックスを表示（タッチデバイス以外）
+	$(document).on('click', '.dw-reactions-main-button:not(.dw_reaction_like, .dw_reaction_love, .dw_reaction_haha, .dw_reaction_wow, .dw_reaction_sad, .dw_reaction_angry)', function(e){
+		// タッチデバイスでは touchstart で処理済みなのでスキップ
+		if(isProcessingTouch) return false;
+		
 		var parent = $(this).parent();
 		if(parent.parent().data('type')=='vote' && !parent.hasClass('reaction-show')){
 			e.preventDefault();
@@ -40,8 +68,11 @@
 		}
 	});
 
-	// リアクションボックス外をクリックしたら閉じる
-	$(document).on('click touchstart', function(e){
+	// リアクションボックス外をタップ/クリックしたら閉じる
+	$(document).on('touchstart click', function(e){
+		// タップ処理中は無視
+		if(isProcessingTouch) return;
+		
 		if(!$(e.target).closest('.dw-reactions-button').length){
 			$('div.dw-reactions-button').removeClass('reaction-show');
 		}
@@ -57,8 +88,10 @@
 
 	$('div.dw-reactions-button').disableSelection();
 
-	$(document).on('click', '.dw-reaction', function(e){
+	// リアクションアイコンをタップ/クリック
+	$(document).on('touchend click', '.dw-reaction', function(e){
 		e.preventDefault();
+		e.stopPropagation();
 
 		var t = $(this), $class = t.attr('class'), main = t.parent().parent().parent(), vote_type = main.attr('data-type'), voted = main.attr('data-vote'), text = t.find('strong').text();
 		
@@ -89,6 +122,8 @@
 					main.attr('data-vote','yes').data('type','unvote');
 			}
 		});
+		
+		return false;
 	});
 
 	// すでにリアクション済みの場合のクリック処理
