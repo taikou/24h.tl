@@ -18,18 +18,15 @@
 	// 開いているリアクションボックスを追跡
 	var openReactionBox = null;
 	var boxOpenTime = 0; // ボックスを開いた時刻
-	var isTouchDevice = false; // タッチデバイスかどうか
 	
-	// タッチデバイスを検出（最初のtouchstartで判定）
-	$(document).one('touchstart', function() {
-		isTouchDevice = true;
-		console.log('[Reaction Debug] Touch device detected');
-	});
+	// ホバーが可能なデバイスかどうかを判定（CSS Media Queryを使用）
+	var isHoverCapable = window.matchMedia('(hover: hover)').matches;
+	console.log('[Reaction Debug] Hover capable device: ' + isHoverCapable);
 
 	// PC用: マウスホバーでリアクションボックスを表示
 	$(document).on('mouseenter', 'div.dw-reactions-button', function(e){
-		// タッチデバイスではホバーを無視
-		if(isTouchDevice) return;
+		// ホバーが可能なデバイスのみ
+		if(!isHoverCapable) return;
 		
 		if($(this).parent().data('type')=='vote'){
 			console.log('[Reaction Debug] PC: mouseenter - showing box');
@@ -40,8 +37,8 @@
 
 	// PC用: マウスを離すと閉じる
 	$(document).on('mouseleave', 'div.dw-reactions-button', function(e){
-		// タッチデバイスではホバーを無視
-		if(isTouchDevice) return;
+		// ホバーが可能なデバイスのみ
+		if(!isHoverCapable) return;
 		
 		console.log('[Reaction Debug] PC: mouseleave - hiding box');
 		$(this).removeClass('reaction-show');
@@ -50,14 +47,20 @@
 		}
 	});
 
-	// モバイル用: タップでリアクションボックスをトグル
-	$(document).on('touchend', '.dw-reactions-main-button:not(.dw_reaction_like, .dw_reaction_love, .dw_reaction_haha, .dw_reaction_wow, .dw_reaction_sad, .dw_reaction_angry)', function(e){
+	// モバイル用: クリックでリアクションボックスをトグル
+	$(document).on('click', '.dw-reactions-main-button:not(.dw_reaction_like, .dw_reaction_love, .dw_reaction_haha, .dw_reaction_wow, .dw_reaction_sad, .dw_reaction_angry)', function(e){
 		var parent = $(this).parent();
 		if(parent.parent().data('type')=='vote'){
+			// ホバーが可能なデバイスではクリックでトグルしない
+			if(isHoverCapable) {
+				console.log('[Reaction Debug] PC: click on button (hover device, ignoring)');
+				return;
+			}
+			
 			e.preventDefault();
 			e.stopPropagation();
 			
-			console.log('[Reaction Debug] Mobile: touchend on button');
+			console.log('[Reaction Debug] Mobile: click on button');
 			
 			// すでに開いているリアクションボックスがあれば閉じる
 			if(openReactionBox && openReactionBox[0] !== parent[0]){
@@ -80,23 +83,14 @@
 			return false;
 		}
 	});
-
-	// リアクションボックス外をタップしたら閉じる（モバイル用）
-	$(document).on('touchend', function(e){
+	
+	// リアクションボックス外をクリックしたら閉じる
+	$(document).on('click', function(e){
 		if(openReactionBox && !$(e.target).closest('.dw-reactions-button').length){
-			console.log('[Reaction Debug] Mobile: touchend outside - closing box');
+			console.log('[Reaction Debug] Click outside - closing box');
 			openReactionBox.removeClass('reaction-show');
 			openReactionBox = null;
 			boxOpenTime = 0;
-		}
-	});
-	
-	// リアクションボックス外をクリックしたら閉じる（PC用）
-	$(document).on('click', function(e){
-		if(!isTouchDevice && openReactionBox && !$(e.target).closest('.dw-reactions-button').length){
-			console.log('[Reaction Debug] PC: click outside - closing box');
-			openReactionBox.removeClass('reaction-show');
-			openReactionBox = null;
 		}
 	});
 
@@ -110,17 +104,17 @@
 
 	$('div.dw-reactions-button').disableSelection();
 
-	// モバイル用: リアクションアイコンをタップして選択
-	$(document).on('touchend', '.dw-reaction', function(e){
-		// ボックスを開いてから500ms以内は選択を無視（誤タップ防止）
-		if(boxOpenTime > 0 && (Date.now() - boxOpenTime < 500)) {
-			console.log('[Reaction Debug] Mobile: touchend too soon, ignoring');
+	// リアクションアイコンをクリックして選択（PCとモバイル共通）
+	$(document).on('click', '.dw-reaction', function(e){
+		// モバイルでボックスを開いてから300ms以内は選択を無視（誤タップ防止）
+		if(!isHoverCapable && boxOpenTime > 0 && (Date.now() - boxOpenTime < 300)) {
+			console.log('[Reaction Debug] Click too soon after opening, ignoring');
 			e.preventDefault();
 			e.stopPropagation();
 			return false;
 		}
 		
-		console.log('[Reaction Debug] Mobile: touchend on reaction icon');
+		console.log('[Reaction Debug] Click on reaction icon');
 		e.preventDefault();
 		e.stopPropagation();
 
@@ -137,7 +131,7 @@
 			case 'angry': like_type=6; break;
 		}
 		
-		console.log('[Reaction Debug] Mobile: sending reaction type ' + like_type);
+		console.log('[Reaction Debug] Sending reaction type ' + like_type);
 		
 		// リアクションボックスを閉じる
 		$('div.dw-reactions-button').removeClass('reaction-show');
@@ -154,54 +148,7 @@
 				type: like_type,
 			},
 			success: function(data) {
-				console.log('[Reaction Debug] Mobile: reaction sent successfully');
-				$('.dw-reactions-post-'+main.data('post')).find('.dw-reactions-main-button').attr('class','dw-reactions-main-button').addClass('dw_reaction_'+type[2]).text(text);
-				main.attr('data-vote','yes').data('type','unvote');
-			}
-		});
-		
-		return false;
-	});
-
-	// PC用: リアクションアイコンをクリックして選択
-	$(document).on('click', '.dw-reaction', function(e){
-		// タッチデバイスではclickイベントを無視（touchendで処理済み）
-		if(isTouchDevice) return;
-		
-		console.log('[Reaction Debug] PC: click on reaction icon');
-		e.preventDefault();
-		e.stopPropagation();
-
-		var t = $(this), $class = t.attr('class'), main = t.parent().parent().parent(), vote_type = main.attr('data-type'), voted = main.attr('data-vote'), text = t.find('strong').text();
-		
-		res = $class.split(' ');
-		type = res[1].split('-');
-		switch(type[2]){
-			case 'like': like_type=1; break;
-			case 'love': like_type=2; break;
-			case 'haha': like_type=3; break;
-			case 'wow': like_type=4; break;
-			case 'sad': like_type=5; break;
-			case 'angry': like_type=6; break;
-		}
-		
-		console.log('[Reaction Debug] PC: sending reaction type ' + like_type);
-		
-		// リアクションボックスを閉じる
-		$('div.dw-reactions-button').removeClass('reaction-show');
-		openReactionBox = null;
-
-		$.ajax({
-			url: '/public/ajax/favorites.php',
-			dataType: 'json',
-			type: 'POST',
-			data: {
-				id: main.data('post'),
-				token: main.data('token'),
-				type: like_type,
-			},
-			success: function(data) {
-				console.log('[Reaction Debug] PC: reaction sent successfully');
+				console.log('[Reaction Debug] Reaction sent successfully');
 				$('.dw-reactions-post-'+main.data('post')).find('.dw-reactions-main-button').attr('class','dw-reactions-main-button').addClass('dw_reaction_'+type[2]).text(text);
 				main.attr('data-vote','yes').data('type','unvote');
 			}
