@@ -635,6 +635,7 @@ public static function resizeImageFixed( $image, $width, $height, $imageNew = nu
 	      (?:           
 	        /embed/    
 	      | /v/         
+	      | /shorts/    
 	      | .*v=        
 	      )            
 	    )              
