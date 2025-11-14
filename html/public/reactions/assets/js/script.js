@@ -50,6 +50,8 @@
 	// モバイル用: クリックでリアクションボックスをトグル
 	$(document).on('click', '.dw-reactions-main-button:not(.dw_reaction_like, .dw_reaction_love, .dw_reaction_haha, .dw_reaction_wow, .dw_reaction_sad, .dw_reaction_angry)', function(e){
 		var parent = $(this).parent();
+		console.log('[Reaction Debug] Click on button, data-type:', parent.parent().data('type'), 'isHoverCapable:', isHoverCapable);
+		
 		if(parent.parent().data('type')=='vote'){
 			// ホバーが可能なデバイスではクリックでトグルしない
 			if(isHoverCapable) {
@@ -59,20 +61,23 @@
 			
 			e.preventDefault();
 			e.stopPropagation();
+			e.stopImmediatePropagation();
 			
-			console.log('[Reaction Debug] Mobile: click on button');
+			console.log('[Reaction Debug] Mobile: click on button, hasClass reaction-show:', parent.hasClass('reaction-show'));
 			
 			// すでに開いているリアクションボックスがあれば閉じる
 			if(openReactionBox && openReactionBox[0] !== parent[0]){
+				console.log('[Reaction Debug] Mobile: closing other box');
 				openReactionBox.removeClass('reaction-show');
 			}
 			
 			// このリアクションボックスをトグル
 			if(!parent.hasClass('reaction-show')){
-				console.log('[Reaction Debug] Mobile: opening box');
+				console.log('[Reaction Debug] Mobile: opening box NOW');
 				boxOpenTime = Date.now(); // ボックスを開いた時刻を記録
 				parent.addClass('reaction-show');
 				openReactionBox = parent;
+				console.log('[Reaction Debug] Mobile: box opened, boxOpenTime:', boxOpenTime);
 			} else {
 				console.log('[Reaction Debug] Mobile: closing box');
 				parent.removeClass('reaction-show');
@@ -86,7 +91,19 @@
 	
 	// リアクションボックス外をクリックしたら閉じる
 	$(document).on('click', function(e){
-		if(openReactionBox && !$(e.target).closest('.dw-reactions-button').length){
+		var target = $(e.target);
+		var closestButton = target.closest('.dw-reactions-button');
+		var timeSinceOpen = boxOpenTime > 0 ? (Date.now() - boxOpenTime) : 999999;
+		
+		console.log('[Reaction Debug] Document click, target:', e.target.className, 'closest button:', closestButton.length, 'openReactionBox:', !!openReactionBox, 'timeSinceOpen:', timeSinceOpen);
+		
+		// ボックスを開いてから100ms以内は閉じない（イベントバブリング対策）
+		if(timeSinceOpen < 100) {
+			console.log('[Reaction Debug] Too soon after opening, ignoring document click');
+			return;
+		}
+		
+		if(openReactionBox && closestButton.length === 0){
 			console.log('[Reaction Debug] Click outside - closing box');
 			openReactionBox.removeClass('reaction-show');
 			openReactionBox = null;
@@ -106,17 +123,21 @@
 
 	// リアクションアイコンをクリックして選択（PCとモバイル共通）
 	$(document).on('click', '.dw-reaction', function(e){
-		// モバイルでボックスを開いてから300ms以内は選択を無視（誤タップ防止）
-		if(!isHoverCapable && boxOpenTime > 0 && (Date.now() - boxOpenTime < 300)) {
-			console.log('[Reaction Debug] Click too soon after opening, ignoring');
+		var timeSinceOpen = boxOpenTime > 0 ? (Date.now() - boxOpenTime) : 999999;
+		
+		// モバイルでボックスを開いてから500ms以内は選択を無視（誤タップ防止）
+		if(!isHoverCapable && boxOpenTime > 0 && timeSinceOpen < 500) {
+			console.log('[Reaction Debug] Click too soon after opening (' + timeSinceOpen + 'ms), ignoring');
 			e.preventDefault();
 			e.stopPropagation();
+			e.stopImmediatePropagation();
 			return false;
 		}
 		
-		console.log('[Reaction Debug] Click on reaction icon');
+		console.log('[Reaction Debug] Click on reaction icon (time since open: ' + timeSinceOpen + 'ms)');
 		e.preventDefault();
 		e.stopPropagation();
+		e.stopImmediatePropagation();
 
 		var t = $(this), $class = t.attr('class'), main = t.parent().parent().parent(), vote_type = main.attr('data-type'), voted = main.attr('data-vote'), text = t.find('strong').text();
 		
