@@ -69,6 +69,10 @@
 			if(openReactionBox && openReactionBox[0] !== parent[0]){
 				console.log('[Reaction Debug] Mobile: closing other box');
 				openReactionBox.removeClass('reaction-show');
+				openReactionBox.find('.dw-reaction').css({
+					'transition': '',
+					'animation': ''
+				});
 			}
 			
 			// このリアクションボックスをトグル
@@ -76,11 +80,20 @@
 				console.log('[Reaction Debug] Mobile: opening box NOW');
 				boxOpenTime = Date.now(); // ボックスを開いた時刻を記録
 				parent.addClass('reaction-show');
+				// モバイル用: アイコンを即座に表示（CSSアニメーション遅延を無効化）
+				parent.find('.dw-reaction').css({
+					'transition': 'opacity 0s, transform .07s ease-in-out 0s, top .07s ease-in-out 0s',
+					'animation': 'none'
+				});
 				openReactionBox = parent;
 				console.log('[Reaction Debug] Mobile: box opened, boxOpenTime:', boxOpenTime);
 			} else {
 				console.log('[Reaction Debug] Mobile: closing box');
 				parent.removeClass('reaction-show');
+				parent.find('.dw-reaction').css({
+					'transition': '',
+					'animation': ''
+				});
 				openReactionBox = null;
 				boxOpenTime = 0;
 			}
@@ -106,6 +119,10 @@
 		if(openReactionBox && closestButton.length === 0){
 			console.log('[Reaction Debug] Click outside - closing box');
 			openReactionBox.removeClass('reaction-show');
+			openReactionBox.find('.dw-reaction').css({
+				'transition': '',
+				'animation': ''
+			});
 			openReactionBox = null;
 			boxOpenTime = 0;
 		}
@@ -125,8 +142,8 @@
 	$(document).on('click', '.dw-reaction', function(e){
 		var timeSinceOpen = boxOpenTime > 0 ? (Date.now() - boxOpenTime) : 999999;
 		
-		// モバイルでボックスを開いてから500ms以内は選択を無視（誤タップ防止）
-		if(!isHoverCapable && boxOpenTime > 0 && timeSinceOpen < 500) {
+		// モバイルでボックスを開いてから200ms以内は選択を無視（誤タップ防止）
+		if(!isHoverCapable && boxOpenTime > 0 && timeSinceOpen < 200) {
 			console.log('[Reaction Debug] Click too soon after opening (' + timeSinceOpen + 'ms), ignoring');
 			e.preventDefault();
 			e.stopPropagation();
@@ -156,6 +173,10 @@
 		
 		// リアクションボックスを閉じる
 		$('div.dw-reactions-button').removeClass('reaction-show');
+		$('.dw-reaction').css({
+			'transition': '',
+			'animation': ''
+		});
 		openReactionBox = null;
 		boxOpenTime = 0;
 
